@@ -3,10 +3,13 @@ package travelerdendro
 import (
 	"fmt"
 
+	"github.com/genshinsim/gcsim/pkg/core/attacks"
 	"github.com/genshinsim/gcsim/pkg/core/attributes"
 	"github.com/genshinsim/gcsim/pkg/core/combat"
 	"github.com/genshinsim/gcsim/pkg/core/event"
+	"github.com/genshinsim/gcsim/pkg/core/geometry"
 	"github.com/genshinsim/gcsim/pkg/core/glog"
+	"github.com/genshinsim/gcsim/pkg/core/reactions"
 	"github.com/genshinsim/gcsim/pkg/gadget"
 	"github.com/genshinsim/gcsim/pkg/reactable"
 )
@@ -14,10 +17,9 @@ import (
 type LeaLotus struct {
 	*gadget.Gadget
 	*reactable.Reactable
-	burstAtk        *combat.AttackEvent
-	char            *char
-	targetingRadius float64
-	hitboxRadius    float64
+	burstAtk     *combat.AttackEvent
+	char         *char
+	hitboxRadius float64
 }
 
 func (s *LeaLotus) AuraContains(e ...attributes.Element) bool {
@@ -32,12 +34,12 @@ func (s *LeaLotus) AuraContains(e ...attributes.Element) bool {
 func (c *char) newLeaLotusLamp() *LeaLotus {
 	s := &LeaLotus{}
 	player := c.Core.Combat.Player()
-	pos := combat.CalcOffsetPoint(
+	c.burstPos = geometry.CalcOffsetPoint(
 		player.Pos(),
-		combat.Point{Y: 1},
+		geometry.Point{Y: 1},
 		player.Direction(),
 	)
-	s.Gadget = gadget.New(c.Core, pos, 1, combat.GadgetTypLeaLotus)
+	s.Gadget = gadget.New(c.Core, c.burstPos, 1, combat.GadgetTypLeaLotus)
 	s.Reactable = &reactable.Reactable{}
 	s.Reactable.Init(s, c.Core)
 	s.Durability[reactable.ModifierDendro] = 10
@@ -66,17 +68,17 @@ func (c *char) newLeaLotusLamp() *LeaLotus {
 	c.burstTransfig = attributes.NoElement
 	s.char = c
 
-	s.targetingRadius = 8
+	c.burstRadius = 8
 	s.hitboxRadius = 2
 	c.burstOverflowingLotuslight = 0
 
 	procAI := combat.AttackInfo{
 		ActorIndex: c.Index,
 		Abil:       "Lea Lotus Lamp",
-		AttackTag:  combat.AttackTagElementalBurst,
-		ICDTag:     combat.ICDTagElementalBurst,
-		ICDGroup:   combat.ICDGroupDefault,
-		StrikeType: combat.StrikeTypeDefault,
+		AttackTag:  attacks.AttackTagElementalBurst,
+		ICDTag:     attacks.ICDTagElementalBurst,
+		ICDGroup:   attacks.ICDGroupDefault,
+		StrikeType: attacks.StrikeTypeDefault,
 		Element:    attributes.Dendro,
 		Durability: 25,
 		Mult:       burstTick[c.TalentLvlBurst()],
@@ -97,7 +99,7 @@ func (s *LeaLotus) HandleAttack(atk *combat.AttackEvent) float64 {
 	s.ShatterCheck(atk)
 
 	if atk.Info.Durability > 0 {
-		atk.Info.Durability *= combat.Durability(s.WillApplyEle(atk.Info.ICDTag, atk.Info.ICDGroup, atk.Info.ActorIndex))
+		atk.Info.Durability *= reactions.Durability(s.WillApplyEle(atk.Info.ICDTag, atk.Info.ICDGroup, atk.Info.ActorIndex))
 		if atk.Info.Durability > 0 && atk.Info.Element != attributes.Physical {
 			existing := s.Reactable.ActiveAuraString()
 			applied := atk.Info.Durability
@@ -167,17 +169,16 @@ func (s *LeaLotus) Tick() {
 }
 
 func (l *LeaLotus) QueueAttack(delay int) {
-	enemies := l.Core.Combat.EnemiesWithinRadius(l.Gadget.Pos(), l.targetingRadius)
-	if len(enemies) > 0 {
-		idx := l.Core.Rand.Intn(len(enemies))
-
-		l.Core.QueueAttackWithSnap(
-			l.burstAtk.Info,
-			l.burstAtk.Snapshot,
-			combat.NewCircleHitOnTarget(l.Core.Combat.Enemy(enemies[idx]), nil, l.hitboxRadius),
-			delay,
-		)
+	enemy := l.Core.Combat.RandomEnemyWithinArea(combat.NewCircleHitOnTarget(l.Gadget, nil, l.char.burstRadius), nil)
+	if enemy == nil {
+		return
 	}
+	l.Core.QueueAttackWithSnap(
+		l.burstAtk.Info,
+		l.burstAtk.Snapshot,
+		combat.NewCircleHitOnTarget(enemy, nil, l.hitboxRadius),
+		delay,
+	)
 }
 
 func (r *LeaLotus) React(a *combat.AttackEvent) {
@@ -222,7 +223,7 @@ func (s *LeaLotus) TryBloom(a *combat.AttackEvent) {
 	if !s.Reactable.TryBloom(a) {
 		return
 	}
-	s.targetingRadius = 12
+	s.char.burstRadius = 12
 	s.hitboxRadius = 4
 	for t := 15; t <= s.Duration; t += 90 {
 		s.QueueAttack(t)
@@ -236,7 +237,7 @@ func (s *LeaLotus) TryBurning(a *combat.AttackEvent) {
 	}
 	s.burstAtk.Info.Abil = "Lea Lotus Lamp Explosion"
 	s.burstAtk.Info.Durability = 50
-	s.burstAtk.Info.ICDTag = combat.ICDTagNone
+	s.burstAtk.Info.ICDTag = attacks.ICDTagNone
 	s.burstAtk.Info.Mult = burstExplode[s.char.TalentLvlBurst()]
 	s.Core.Tasks.Add(func() {
 		s.Core.QueueAttackWithSnap(
@@ -259,6 +260,8 @@ func (s *LeaLotus) transfig(ele attributes.Element) {
 	s.Kill()
 }
 
-func (s *LeaLotus) SetDirection(trg combat.Point)                   {}
-func (s *LeaLotus) SetDirectionToClosestEnemy()                     {}
-func (s *LeaLotus) CalcTempDirection(trg combat.Point) combat.Point { return combat.DefaultDirection() }
+func (s *LeaLotus) SetDirection(trg geometry.Point) {}
+func (s *LeaLotus) SetDirectionToClosestEnemy()     {}
+func (s *LeaLotus) CalcTempDirection(trg geometry.Point) geometry.Point {
+	return geometry.DefaultDirection()
+}

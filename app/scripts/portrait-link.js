@@ -84,6 +84,11 @@ const names = [
   "nahida",
   "layla",
   "faruzan",
+  "wanderer",
+  "alhaitham",
+  "yaoyao",
+  "mika",
+  "dehya"
 ];
 
 const travelers = [
@@ -295,12 +300,12 @@ sets.forEach((e) => {
 
 fs.writeFileSync(
   "./src/Components/data/artifactNames.json",
-  JSON.stringify(setMap),
+  JSON.stringify(setMap, null, 2),
   "utf-8"
 );
 
 fs.writeFileSync(
   "./public/locales/IngameNames.json",
-  JSON.stringify(trans),
+  JSON.stringify(trans, null, 2),
   "utf-8"
 );
