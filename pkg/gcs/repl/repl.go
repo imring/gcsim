@@ -8,7 +8,7 @@ import (
 
 	"github.com/genshinsim/gcsim/pkg/core/action"
 	"github.com/genshinsim/gcsim/pkg/gcs"
-	"github.com/genshinsim/gcsim/pkg/gcs/ast"
+	"github.com/genshinsim/gcsim/pkg/gcs/parse"
 )
 
 const Prompt = ">> "
@@ -19,7 +19,7 @@ func Eval(s string, log *log.Logger) {
 	done := make(chan bool)
 	go handleSimActions(simActions, done)
 
-	p := ast.New(s)
+	p := parse.New(s)
 	res, err := p.Parse()
 
 	if err != nil {
@@ -71,7 +71,7 @@ func Start(in io.Reader, out io.Writer, log *log.Logger, showProgram bool) {
 		}
 
 		line := scanner.Text()
-		p := ast.New(line)
+		p := parse.New(line)
 		res, err := p.Parse()
 
 		if err != nil {

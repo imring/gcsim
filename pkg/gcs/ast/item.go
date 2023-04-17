@@ -5,9 +5,9 @@ import "fmt"
 // Token represents a token or text string returned from the scanner.
 type Token struct {
 	Typ  TokenType // The type of this item.
-	pos  Pos       // The starting position, in bytes, of this item in the input string.
+	Pos  Pos       // The starting position, in bytes, of this item in the input string.
 	Val  string    // The value of this item.
-	line int       // The line number at the start of this item.
+	Line int       // The line number at the start of this item.
 }
 
 func (i Token) String() string {

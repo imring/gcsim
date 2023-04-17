@@ -1,4 +1,4 @@
-package ast
+package parse
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/genshinsim/gcsim/pkg/gcs/ast"
 	"github.com/genshinsim/gcsim/pkg/shortcut"
 )
 
@@ -15,13 +16,13 @@ type stateFn func(*lexer) stateFn
 
 // lexer holds the state of the scanner.
 type lexer struct {
-	input        string     // the string being scanned
-	pos          Pos        // current position in the input
-	start        Pos        // start position of this item
-	width        Pos        // width of last rune read from input
-	items        chan Token // channel of scanned items
-	line         int        // 1+number of newlines seen
-	startLine    int        // start line of this item
+	input        string         // the string being scanned
+	pos          ast.Pos        // current position in the input
+	start        ast.Pos        // start position of this item
+	width        ast.Pos        // width of last rune read from input
+	items        chan ast.Token // channel of scanned items
+	line         int            // 1+number of newlines seen
+	startLine    int            // start line of this item
 	parenDepth   int
 	sqParenDepth int
 	braceDepth   int
@@ -34,7 +35,7 @@ func (l *lexer) next() rune {
 		return eof
 	}
 	r, w := utf8.DecodeRuneInString(l.input[l.pos:])
-	l.width = Pos(w)
+	l.width = ast.Pos(w)
 	l.pos += l.width
 	if r == '\n' {
 		l.line++
@@ -59,12 +60,12 @@ func (l *lexer) backup() {
 }
 
 // emit passes an item back to the client.
-func (l *lexer) emit(t TokenType) {
-	l.items <- Token{
+func (l *lexer) emit(t ast.TokenType) {
+	l.items <- ast.Token{
 		Typ:  t,
-		pos:  l.start,
+		Pos:  l.start,
 		Val:  l.input[l.start:l.pos],
-		line: l.startLine,
+		Line: l.startLine,
 	}
 	l.start = l.pos
 	l.startLine = l.line
@@ -96,18 +97,18 @@ func (l *lexer) acceptRun(valid string) {
 // errorf returns an error token and terminates the scan by passing
 // back a nil pointer that will be the next state, terminating l.nextItem.
 func (l *lexer) errorf(format string, args ...interface{}) stateFn {
-	l.items <- Token{
-		Typ:  ItemError,
-		pos:  l.start,
+	l.items <- ast.Token{
+		Typ:  ast.ItemError,
+		Pos:  l.start,
 		Val:  fmt.Sprintf(format, args...),
-		line: l.startLine,
+		Line: l.startLine,
 	}
 	return nil
 }
 
 // nextItem returns the next item from the input.
 // Called by the parser, not in the lexing goroutine.
-func (l *lexer) nextItem() Token {
+func (l *lexer) nextItem() ast.Token {
 	return <-l.items
 }
 
@@ -122,7 +123,7 @@ func (l *lexer) drain() {
 func lex(input string) *lexer {
 	l := &lexer{
 		input:     input,
-		items:     make(chan Token),
+		items:     make(chan ast.Token),
 		line:      1,
 		startLine: 1,
 	}
@@ -147,12 +148,12 @@ func lexText(l *lexer) stateFn {
 	// log.Printf("lexText next is %c\n", n)
 	switch r := l.next(); {
 	case r == eof:
-		l.emit(ItemEOF)
+		l.emit(ast.ItemEOF)
 		return nil
 	case r == ';':
-		l.emit(ItemTerminateLine)
+		l.emit(ast.ItemTerminateLine)
 	case r == ':':
-		l.emit(ItemColon)
+		l.emit(ast.ItemColon)
 	case isSpace(r):
 		l.ignore()
 	case r == '#':
@@ -161,15 +162,15 @@ func lexText(l *lexer) stateFn {
 	case r == '=':
 		n := l.next()
 		if n == '=' {
-			l.emit(OpEqual)
+			l.emit(ast.OpEqual)
 		} else {
 			l.backup()
-			l.emit(ItemAssign)
+			l.emit(ast.ItemAssign)
 		}
 	case r == ',':
-		l.emit(ItemComma)
+		l.emit(ast.ItemComma)
 	case r == '*':
-		l.emit(ItemAsterisk)
+		l.emit(ast.ItemAsterisk)
 	case r == '+':
 		// //check if next item is a number or not; if number lexNumber
 		// //otherwise it's a + sign
@@ -182,7 +183,7 @@ func lexText(l *lexer) stateFn {
 		// }
 		// //otherwise it's a plus sign
 		// l.backup()
-		l.emit(ItemPlus)
+		l.emit(ast.ItemPlus)
 	case r == '/':
 		//check if next is another / or not; if / then lexComment
 		n := l.next()
@@ -191,11 +192,11 @@ func lexText(l *lexer) stateFn {
 			return lexComment
 		} else {
 			l.backup()
-			l.emit(ItemForwardSlash)
+			l.emit(ast.ItemForwardSlash)
 		}
 	case r == '.':
 		// special look-ahead for ".field" so we don't break l.backup().
-		if l.pos < Pos(len(l.input)) {
+		if l.pos < ast.Pos(len(l.input)) {
 			r := l.input[l.pos]
 			if r < '0' || '9' < r {
 				return lexField
@@ -216,68 +217,68 @@ func lexText(l *lexer) stateFn {
 		}
 		//other wise it's a - sign
 		l.backup()
-		l.emit(ItemMinus)
+		l.emit(ast.ItemMinus)
 	case r == '>':
 		if n := l.next(); n == '=' {
-			l.emit(OpGreaterThanOrEqual)
+			l.emit(ast.OpGreaterThanOrEqual)
 		} else {
 			l.backup()
-			l.emit(OpGreaterThan)
+			l.emit(ast.OpGreaterThan)
 		}
 	case r == '<':
 		switch n := l.next(); n {
 		case '=':
-			l.emit(OpLessThanOrEqual)
+			l.emit(ast.OpLessThanOrEqual)
 		case '>':
-			l.emit(OpNotEqual)
+			l.emit(ast.OpNotEqual)
 		default:
 			l.backup()
-			l.emit(OpLessThan)
+			l.emit(ast.OpLessThan)
 		}
 	case r == '|':
 		if n := l.next(); n == '|' {
-			l.emit(LogicOr)
+			l.emit(ast.LogicOr)
 		} else {
 			return l.errorf("unrecognized character in action: %#U", r)
 		}
 	case r == '!':
 		if n := l.next(); n == '=' {
-			l.emit(OpNotEqual)
+			l.emit(ast.OpNotEqual)
 		} else {
 			l.backup()
-			l.emit(LogicNot)
+			l.emit(ast.LogicNot)
 		}
 	case r == '"':
 		return lexQuote
 	case r == '&':
 		if n := l.next(); n == '&' {
-			l.emit(LogicAnd)
+			l.emit(ast.LogicAnd)
 		} else {
 			return l.errorf("unrecognized character in action: %#U", r)
 		}
 	case r == '(':
-		l.emit(ItemLeftParen)
+		l.emit(ast.ItemLeftParen)
 		l.parenDepth++
 	case r == ')':
-		l.emit(ItemRightParen)
+		l.emit(ast.ItemRightParen)
 		l.parenDepth--
 		if l.parenDepth < 0 {
 			return l.errorf("unexpected right paren %#U", r)
 		}
 	case r == '[':
-		l.emit(ItemLeftSquareParen)
+		l.emit(ast.ItemLeftSquareParen)
 		l.sqParenDepth++
 	case r == ']':
-		l.emit(ItemRightSquareParen)
+		l.emit(ast.ItemRightSquareParen)
 		l.sqParenDepth--
 		if l.sqParenDepth < 0 {
 			return l.errorf("unexpected right sq paren %#U", r)
 		}
 	case r == '{':
-		l.emit(ItemLeftBrace)
+		l.emit(ast.ItemLeftBrace)
 		l.braceDepth++
 	case r == '}':
-		l.emit(ItemRightBrace)
+		l.emit(ast.ItemRightBrace)
 		l.braceDepth--
 		if l.braceDepth < 0 {
 			return l.errorf("unexpected right brace %#U", r)
@@ -310,7 +311,7 @@ Loop:
 // The . has been scanned.
 func lexField(l *lexer) stateFn {
 	if l.atTerminator() { // Nothing interesting follows -> "." or "$".
-		l.emit(ItemDot)
+		l.emit(ast.ItemDot)
 		return lexText
 	}
 	var r rune
@@ -324,7 +325,7 @@ func lexField(l *lexer) stateFn {
 	if !l.atTerminator() {
 		return l.errorf("bad character %#U", r)
 	}
-	l.emit(ItemField)
+	l.emit(ast.ItemField)
 	return lexText
 }
 
@@ -343,7 +344,7 @@ Loop:
 			break Loop
 		}
 	}
-	l.emit(ItemString)
+	l.emit(ast.ItemString)
 	return lexText
 }
 
@@ -361,12 +362,12 @@ Loop:
 				return l.errorf("bad character %#U", r)
 			}
 			switch {
-			case key[word] > ItemKeyword:
-				l.emit(key[word])
+			case ast.Keys[word] > ast.ItemKeyword:
+				l.emit(ast.Keys[word])
 			case word[0] == '.':
-				l.emit(ItemField)
+				l.emit(ast.ItemField)
 			case word == "true", word == "false":
-				l.emit(ItemBool)
+				l.emit(ast.ItemBool)
 			default:
 				l.emit(checkIdentifier(word))
 			}
@@ -376,20 +377,20 @@ Loop:
 	return lexText
 }
 
-func checkIdentifier(word string) TokenType {
-	if _, ok := statKeys[word]; ok {
-		return ItemStatKey
+func checkIdentifier(word string) ast.TokenType {
+	if _, ok := ast.StatKeys[word]; ok {
+		return ast.ItemStatKey
 	}
-	if _, ok := eleKeys[word]; ok {
-		return ItemElementKey
+	if _, ok := ast.EleKeys[word]; ok {
+		return ast.ItemElementKey
 	}
 	if _, ok := shortcut.CharNameToKey[word]; ok {
-		return ItemCharacterKey
+		return ast.ItemCharacterKey
 	}
-	if _, ok := actionKeys[word]; ok {
-		return ItemActionKey
+	if _, ok := ast.ActionKeys[word]; ok {
+		return ast.ItemActionKey
 	}
-	return ItemIdentifier
+	return ast.ItemIdentifier
 }
 
 func lexNumber(l *lexer) stateFn {
@@ -402,7 +403,7 @@ func lexNumber(l *lexer) stateFn {
 		l.acceptRun(digits)
 	}
 
-	l.emit(ItemNumber)
+	l.emit(ast.ItemNumber)
 
 	return lexText
 }

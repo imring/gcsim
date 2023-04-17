@@ -5,7 +5,7 @@ import (
 	"github.com/genshinsim/gcsim/pkg/core/attributes"
 )
 
-var key = map[string]TokenType{
+var Keys = map[string]TokenType{
 	".":           ItemDot,
 	"let":         KeywordLet,
 	"while":       KeywordWhile,
@@ -50,7 +50,7 @@ var key = map[string]TokenType{
 	// target related
 }
 
-var statKeys = map[string]attributes.Stat{
+var StatKeys = map[string]attributes.Stat{
 	"def%":     attributes.DEFP,
 	"def":      attributes.DEF,
 	"hp":       attributes.HP,
@@ -75,7 +75,7 @@ var statKeys = map[string]attributes.Stat{
 	"dmg%":    attributes.DmgP,
 }
 
-var eleKeys = map[string]attributes.Element{
+var EleKeys = map[string]attributes.Element{
 	"electro":  attributes.Electro,
 	"pyro":     attributes.Pyro,
 	"cryo":     attributes.Cryo,
@@ -87,7 +87,7 @@ var eleKeys = map[string]attributes.Element{
 	"physical": attributes.Physical,
 }
 
-var actionKeys = map[string]action.Action{
+var ActionKeys = map[string]action.Action{
 	"skill":       action.ActionSkill,
 	"burst":       action.ActionBurst,
 	"attack":      action.ActionAttack,

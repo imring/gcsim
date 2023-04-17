@@ -7,7 +7,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/genshinsim/gcsim/pkg/gcs/ast"
+	"github.com/genshinsim/gcsim/pkg/gcs/parse"
 	"github.com/genshinsim/gcsim/pkg/simulator"
 )
 
@@ -61,7 +61,7 @@ func RunSubstatOptim(simopt simulator.Options, verbose bool, additionalOptions s
 		sugarLog.Warn(err.Error())
 	}
 
-	parser := ast.New(clean)
+	parser := parse.New(clean)
 	simcfg, err := parser.Parse()
 	if err != nil {
 		log.Println(err)

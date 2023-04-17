@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/genshinsim/gcsim/pkg/core"
-	"github.com/genshinsim/gcsim/pkg/gcs/ast"
+	"github.com/genshinsim/gcsim/pkg/gcs/parse"
 	"github.com/genshinsim/gcsim/pkg/simulation"
 )
 
@@ -58,7 +58,7 @@ noelle attack:3, dash, attack:3, dash, attack;
 
 func main() {
 	//parse cfg
-	p := ast.New(cfg)
+	p := parse.New(cfg)
 	cfg, err := p.Parse()
 	if err != nil {
 		panic(err)

@@ -1,4 +1,4 @@
-package ast
+package parse
 
 import (
 	"errors"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/genshinsim/gcsim/pkg/core/attributes"
 	"github.com/genshinsim/gcsim/pkg/enemy"
+	"github.com/genshinsim/gcsim/pkg/gcs/ast"
 )
 
 func parseTarget(p *Parser) (parseFn, error) {
@@ -13,13 +14,13 @@ func parseTarget(p *Parser) (parseFn, error) {
 	var r enemy.EnemyProfile
 	r.Resist = make(map[attributes.Element]float64)
 	r.ParticleElement = attributes.NoElement
-	for n := p.next(); n.Typ != ItemEOF; n = p.next() {
+	for n := p.next(); n.Typ != ast.ItemEOF; n = p.next() {
 		switch n.Typ {
-		case ItemIdentifier:
+		case ast.ItemIdentifier:
 			switch n.Val {
 			case "pos": //pos will end up defaulting to 0,0 if not set
 				//pos=1.00,2,00
-				item, err := p.acceptSeqReturnLast(ItemAssign, ItemNumber)
+				item, err := p.acceptSeqReturnLast(ast.ItemAssign, ast.ItemNumber)
 				if err != nil {
 					return nil, err
 				}
@@ -27,7 +28,7 @@ func parseTarget(p *Parser) (parseFn, error) {
 				if err != nil {
 					return nil, err
 				}
-				item, err = p.acceptSeqReturnLast(ItemComma, ItemNumber)
+				item, err = p.acceptSeqReturnLast(ast.ItemComma, ast.ItemNumber)
 				if err != nil {
 					return nil, err
 				}
@@ -38,7 +39,7 @@ func parseTarget(p *Parser) (parseFn, error) {
 				r.Pos.X = x
 				r.Pos.Y = y
 			case "radius":
-				item, err := p.acceptSeqReturnLast(ItemAssign, ItemNumber)
+				item, err := p.acceptSeqReturnLast(ast.ItemAssign, ast.ItemNumber)
 				if err != nil {
 					return nil, err
 				}
@@ -48,19 +49,19 @@ func parseTarget(p *Parser) (parseFn, error) {
 				}
 				r.Pos.R = amt
 			default:
-				return nil, fmt.Errorf("<target> bad token at line %v - %v: %v", n.line, n.pos, n)
+				return nil, fmt.Errorf("<target> bad token at line %v - %v: %v", n.Line, n.Pos, n)
 			}
-		case KeywordLvl:
-			n, err = p.acceptSeqReturnLast(ItemAssign, ItemNumber)
+		case ast.KeywordLvl:
+			n, err = p.acceptSeqReturnLast(ast.ItemAssign, ast.ItemNumber)
 			if err == nil {
 				r.Level, err = itemNumberToInt(n)
 			}
-		case ItemStatKey:
+		case ast.ItemStatKey:
 			//should be hp
-			if statKeys[n.Val] != attributes.HP {
-				return nil, fmt.Errorf("<target> bad token at line %v - %v: %v", n.line, n.pos, n)
+			if ast.StatKeys[n.Val] != attributes.HP {
+				return nil, fmt.Errorf("<target> bad token at line %v - %v: %v", n.Line, n.Pos, n)
 			}
-			n, err = p.acceptSeqReturnLast(ItemAssign, ItemNumber)
+			n, err = p.acceptSeqReturnLast(ast.ItemAssign, ast.ItemNumber)
 			if err == nil {
 				r.HP, err = itemNumberToFloat64(n)
 				if err != nil {
@@ -68,9 +69,9 @@ func parseTarget(p *Parser) (parseFn, error) {
 				}
 				p.res.Settings.DamageMode = true
 			}
-		case KeywordResist:
+		case ast.KeywordResist:
 			//this sets all resistance
-			item, err := p.acceptSeqReturnLast(ItemAssign, ItemNumber)
+			item, err := p.acceptSeqReturnLast(ast.ItemAssign, ast.ItemNumber)
 			if err != nil {
 				return nil, err
 			}
@@ -88,8 +89,8 @@ func parseTarget(p *Parser) (parseFn, error) {
 			r.Resist[attributes.Geo] += amt
 			r.Resist[attributes.Dendro] += amt
 			r.Resist[attributes.Anemo] += amt
-		case KeywordParticleThreshold:
-			item, err := p.acceptSeqReturnLast(ItemAssign, ItemNumber)
+		case ast.KeywordParticleThreshold:
+			item, err := p.acceptSeqReturnLast(ast.ItemAssign, ast.ItemNumber)
 			if err != nil {
 				return nil, err
 			}
@@ -98,8 +99,8 @@ func parseTarget(p *Parser) (parseFn, error) {
 				return nil, err
 			}
 			r.ParticleDropThreshold = amt
-		case KeywordParticleDropCount:
-			item, err := p.acceptSeqReturnLast(ItemAssign, ItemNumber)
+		case ast.KeywordParticleDropCount:
+			item, err := p.acceptSeqReturnLast(ast.ItemAssign, ast.ItemNumber)
 			if err != nil {
 				return nil, err
 			}
@@ -108,9 +109,9 @@ func parseTarget(p *Parser) (parseFn, error) {
 				return nil, err
 			}
 			r.ParticleDropCount = amt
-		case ItemElementKey:
+		case ast.ItemElementKey:
 			s := n.Val
-			item, err := p.acceptSeqReturnLast(ItemAssign, ItemNumber)
+			item, err := p.acceptSeqReturnLast(ast.ItemAssign, ast.ItemNumber)
 			if err != nil {
 				return nil, err
 			}
@@ -119,12 +120,12 @@ func parseTarget(p *Parser) (parseFn, error) {
 				return nil, err
 			}
 
-			r.Resist[eleKeys[s]] += amt
-		case ItemTerminateLine:
+			r.Resist[ast.EleKeys[s]] += amt
+		case ast.ItemTerminateLine:
 			p.res.Targets = append(p.res.Targets, r)
 			return parseRows, nil
 		default:
-			return nil, fmt.Errorf("<target> bad token at line %v - %v: %v", n.line, n.pos, n)
+			return nil, fmt.Errorf("<target> bad token at line %v - %v: %v", n.Line, n.Pos, n)
 		}
 		if err != nil {
 			return nil, err

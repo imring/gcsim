@@ -14,6 +14,7 @@ import (
 
 	"github.com/genshinsim/gcsim/pkg/agg"
 	"github.com/genshinsim/gcsim/pkg/gcs/ast"
+	"github.com/genshinsim/gcsim/pkg/gcs/parse"
 	"github.com/genshinsim/gcsim/pkg/result"
 	"github.com/genshinsim/gcsim/pkg/stats"
 	"github.com/genshinsim/gcsim/pkg/worker"
@@ -39,7 +40,7 @@ func Run(opts Options) (result.Summary, error) {
 	if err != nil {
 		return result.Summary{}, err
 	}
-	parser := ast.New(cfg)
+	parser := parse.New(cfg)
 	simcfg, err := parser.Parse()
 	if err != nil {
 		return result.Summary{}, err
