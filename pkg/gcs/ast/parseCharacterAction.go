@@ -22,10 +22,10 @@ type actionAPLOpt struct {
 	tryDropIfNotReady bool
 }
 
-//parseAction returns a node contain a character action, or a block of node containing
-//a list of character actions
+// parseAction returns a node contain a character action, or a block of node containing
+// a list of character actions
 func (p *Parser) parseAction() (Stmt, error) {
-	char, err := p.consume(itemCharacterKey)
+	char, err := p.consume(ItemCharacterKey)
 	if err != nil {
 		//this really shouldn't happen since we already checked
 		return nil, fmt.Errorf("ln%v: expecting character key, got %v", char.line, char.Val)
@@ -34,7 +34,7 @@ func (p *Parser) parseAction() (Stmt, error) {
 
 	//should be multiple action keys next
 	var actions []*CallExpr
-	if n := p.peek(); n.Typ != itemActionKey {
+	if n := p.peek(); n.Typ != ItemActionKey {
 		return nil, fmt.Errorf("ln%v: expecting actions for character %v, got %v", n.line, char.Val, n.Val)
 	}
 
@@ -42,10 +42,10 @@ func (p *Parser) parseAction() (Stmt, error) {
 Loop:
 	for {
 		switch n := p.next(); n.Typ {
-		case itemTerminateLine:
+		case ItemTerminateLine:
 			//stop here
 			break Loop
-		case itemActionKey:
+		case ItemActionKey:
 			actionKey := action.StringToAction(n.Val)
 			expr := &CallExpr{
 				Pos: char.pos,
@@ -91,7 +91,7 @@ Loop:
 			}
 
 			n = p.next()
-			if n.Typ != itemComma {
+			if n.Typ != ItemComma {
 				p.backup()
 				break Loop
 			}
@@ -113,7 +113,7 @@ Loop:
 func (p *Parser) acceptOptionalParamReturnMap() (Expr, error) {
 	//check for params
 	n := p.peek()
-	if n.Typ != itemLeftSquareParen {
+	if n.Typ != ItemLeftSquareParen {
 		return nil, nil
 	}
 
@@ -146,13 +146,13 @@ func (p *Parser) acceptOptionalParamReturnOnlyIntMap() (map[string]int, error) {
 func (p *Parser) acceptOptionalRepeaterReturnCount() (int, error) {
 	count := 1
 	n := p.next()
-	if n.Typ != itemColon {
+	if n.Typ != ItemColon {
 		p.backup()
 		return count, nil
 	}
 	//should be a number next
 	n = p.next()
-	if n.Typ != itemNumber {
+	if n.Typ != ItemNumber {
 		return count, fmt.Errorf("ln%v: expected a number after : but got %v", n.line, n)
 	}
 	//parse number

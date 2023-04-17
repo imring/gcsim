@@ -128,16 +128,16 @@ func New(input string) *Parser {
 		},
 	}
 	//expr functions
-	p.prefixParseFns[itemIdentifier] = p.parseIdent
-	p.prefixParseFns[itemField] = p.parseField
-	p.prefixParseFns[itemNumber] = p.parseNumber
-	p.prefixParseFns[itemBool] = p.parseBool
-	p.prefixParseFns[itemString] = p.parseString
-	p.prefixParseFns[keywordFn] = p.parseFnLit
+	p.prefixParseFns[ItemIdentifier] = p.parseIdent
+	p.prefixParseFns[ItemField] = p.parseField
+	p.prefixParseFns[ItemNumber] = p.parseNumber
+	p.prefixParseFns[ItemBool] = p.parseBool
+	p.prefixParseFns[ItemString] = p.parseString
+	p.prefixParseFns[KeywordFn] = p.parseFnLit
 	p.prefixParseFns[LogicNot] = p.parseUnaryExpr
 	p.prefixParseFns[ItemMinus] = p.parseUnaryExpr
-	p.prefixParseFns[itemLeftParen] = p.parseParen
-	p.prefixParseFns[itemLeftSquareParen] = p.parseMap
+	p.prefixParseFns[ItemLeftParen] = p.parseParen
+	p.prefixParseFns[ItemLeftSquareParen] = p.parseMap
 	p.infixParseFns[LogicAnd] = p.parseBinaryExpr
 	p.infixParseFns[LogicOr] = p.parseBinaryExpr
 	p.infixParseFns[ItemPlus] = p.parseBinaryExpr
@@ -150,7 +150,7 @@ func New(input string) *Parser {
 	p.infixParseFns[OpLessThanOrEqual] = p.parseBinaryExpr
 	p.infixParseFns[OpGreaterThan] = p.parseBinaryExpr
 	p.infixParseFns[OpGreaterThanOrEqual] = p.parseBinaryExpr
-	p.infixParseFns[itemLeftParen] = p.parseCall
+	p.infixParseFns[ItemLeftParen] = p.parseCall
 	return p
 }
 

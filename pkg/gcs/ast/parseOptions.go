@@ -10,81 +10,81 @@ func parseOptions(p *Parser) (parseFn, error) {
 	var err error
 
 	//options debug=true iteration=5000 duration=90 workers=24;
-	for n := p.next(); n.Typ != itemEOF; n = p.next() {
+	for n := p.next(); n.Typ != ItemEOF; n = p.next() {
 
 		switch n.Typ {
-		case itemIdentifier:
+		case ItemIdentifier:
 			//expecting identifier = some value
 			switch n.Val {
 			case "debug":
-				n, err = p.acceptSeqReturnLast(itemAssign, itemBool)
+				n, err = p.acceptSeqReturnLast(ItemAssign, ItemBool)
 				// every run is going to have a debug from now on so we basically ignore what this flag says
 			case "defhalt":
-				n, err = p.acceptSeqReturnLast(itemAssign, itemBool)
+				n, err = p.acceptSeqReturnLast(ItemAssign, ItemBool)
 				p.res.Settings.DefHalt = n.Val == "true"
 			case "hitlag":
-				n, err = p.acceptSeqReturnLast(itemAssign, itemBool)
+				n, err = p.acceptSeqReturnLast(ItemAssign, ItemBool)
 				p.res.Settings.EnableHitlag = n.Val == "true"
 			case "iteration":
-				n, err = p.acceptSeqReturnLast(itemAssign, itemNumber)
+				n, err = p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 				if err == nil {
 					p.res.Settings.Iterations, err = itemNumberToInt(n)
 				}
 			case "duration":
-				n, err = p.acceptSeqReturnLast(itemAssign, itemNumber)
+				n, err = p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 				if err == nil {
 					p.res.Settings.Duration, err = itemNumberToFloat64(n)
 				}
 			case "workers":
-				n, err = p.acceptSeqReturnLast(itemAssign, itemNumber)
+				n, err = p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 				if err == nil {
 					p.res.Settings.NumberOfWorkers, err = itemNumberToInt(n)
 				}
 			case "mode":
 				//TODO: this is for backward compatibility for now
-				n, err = p.acceptSeqReturnLast(itemAssign, itemIdentifier)
+				n, err = p.acceptSeqReturnLast(ItemAssign, ItemIdentifier)
 			case "swap_delay":
-				n, err = p.acceptSeqReturnLast(itemAssign, itemNumber)
+				n, err = p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 				if err == nil {
 					p.res.Settings.Delays.Swap, err = itemNumberToInt(n)
 				}
 			case "attack_delay":
-				n, err = p.acceptSeqReturnLast(itemAssign, itemNumber)
+				n, err = p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 				if err == nil {
 					p.res.Settings.Delays.Attack, err = itemNumberToInt(n)
 				}
 			case "charge_delay":
-				n, err = p.acceptSeqReturnLast(itemAssign, itemNumber)
+				n, err = p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 				if err == nil {
 					p.res.Settings.Delays.Charge, err = itemNumberToInt(n)
 				}
 			case "skill_delay":
-				n, err = p.acceptSeqReturnLast(itemAssign, itemNumber)
+				n, err = p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 				if err == nil {
 					p.res.Settings.Delays.Skill, err = itemNumberToInt(n)
 				}
 			case "burst_delay":
-				n, err = p.acceptSeqReturnLast(itemAssign, itemNumber)
+				n, err = p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 				if err == nil {
 					p.res.Settings.Delays.Burst, err = itemNumberToInt(n)
 				}
 			case "jump_delay":
-				n, err = p.acceptSeqReturnLast(itemAssign, itemNumber)
+				n, err = p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 				if err == nil {
 					p.res.Settings.Delays.Jump, err = itemNumberToInt(n)
 				}
 			case "dash_delay":
-				n, err = p.acceptSeqReturnLast(itemAssign, itemNumber)
+				n, err = p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 				if err == nil {
 					p.res.Settings.Delays.Dash, err = itemNumberToInt(n)
 				}
 			case "aim_delay":
-				n, err = p.acceptSeqReturnLast(itemAssign, itemNumber)
+				n, err = p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 				if err == nil {
 					p.res.Settings.Delays.Aim, err = itemNumberToInt(n)
 				}
 			case "frame_defaults":
-				n, err = p.acceptSeqReturnLast(itemAssign, itemIdentifier)
+				n, err = p.acceptSeqReturnLast(ItemAssign, ItemIdentifier)
 				if err == nil {
 					switch n.Val {
 					case "human":
@@ -105,7 +105,7 @@ func parseOptions(p *Parser) (parseFn, error) {
 			default:
 				return nil, fmt.Errorf("ln%v: unrecognized option specified: %v", n.line, n.Val)
 			}
-		case itemTerminateLine:
+		case ItemTerminateLine:
 			return parseRows, nil
 		default:
 			return nil, fmt.Errorf("ln%v: unrecognized token parsing options: %v", n.line, n)

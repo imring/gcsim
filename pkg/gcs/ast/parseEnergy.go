@@ -10,7 +10,7 @@ func parseEnergy(p *Parser) (parseFn, error) {
 	//energy every interval=300,600 amount=1 #randomly every 300 to 600 frames
 	n := p.next()
 	switch n.Typ {
-	case itemIdentifier:
+	case ItemIdentifier:
 		switch n.Val {
 		case "once":
 			return parseEnergyOnce, nil
@@ -19,7 +19,7 @@ func parseEnergy(p *Parser) (parseFn, error) {
 		default:
 			return nil, fmt.Errorf("ln%v: unrecognized option specified: %v", n.line, n.Val)
 		}
-	case itemTerminateLine:
+	case ItemTerminateLine:
 		return parseRows, nil
 	default:
 		return nil, fmt.Errorf("ln%v: unrecognized token parsing options: %v", n.line, n)
@@ -32,17 +32,17 @@ func parseEnergyOnce(p *Parser) (parseFn, error) {
 	p.res.Energy.Active = true
 	p.res.Energy.Once = true
 
-	for n := p.next(); n.Typ != itemEOF; n = p.next() {
+	for n := p.next(); n.Typ != ItemEOF; n = p.next() {
 		switch n.Typ {
-		case itemIdentifier:
+		case ItemIdentifier:
 			switch n.Val {
 			case "interval":
-				n, err = p.acceptSeqReturnLast(itemAssign, itemNumber)
+				n, err = p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 				if err == nil {
 					p.res.Energy.Start, err = itemNumberToInt(n)
 				}
 			case "amount":
-				item, err := p.acceptSeqReturnLast(itemAssign, itemNumber)
+				item, err := p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 				if err != nil {
 					return nil, err
 				}
@@ -54,7 +54,7 @@ func parseEnergyOnce(p *Parser) (parseFn, error) {
 			default:
 				return nil, fmt.Errorf("ln%v: unrecognized energy event specified: %v", n.line, n.Val)
 			}
-		case itemTerminateLine:
+		case ItemTerminateLine:
 			return parseRows, nil
 		default:
 			return nil, fmt.Errorf("ln%v: unrecognized token parsing energy event: %v", n.line, n)
@@ -72,12 +72,12 @@ func parseEnergyEvery(p *Parser) (parseFn, error) {
 	p.res.Energy.Active = true
 	p.res.Energy.Once = false
 
-	for n := p.next(); n.Typ != itemEOF; n = p.next() {
+	for n := p.next(); n.Typ != ItemEOF; n = p.next() {
 		switch n.Typ {
-		case itemIdentifier:
+		case ItemIdentifier:
 			switch n.Val {
 			case "interval":
-				n, err = p.acceptSeqReturnLast(itemAssign, itemNumber)
+				n, err = p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 				if err != nil {
 					return nil, err
 				}
@@ -86,7 +86,7 @@ func parseEnergyEvery(p *Parser) (parseFn, error) {
 					return nil, err
 				}
 
-				n, err = p.acceptSeqReturnLast(itemComma, itemNumber)
+				n, err = p.acceptSeqReturnLast(ItemComma, ItemNumber)
 				if err != nil {
 					return nil, err
 				}
@@ -95,7 +95,7 @@ func parseEnergyEvery(p *Parser) (parseFn, error) {
 					return nil, err
 				}
 			case "amount":
-				item, err := p.acceptSeqReturnLast(itemAssign, itemNumber)
+				item, err := p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 				if err != nil {
 					return nil, err
 				}
@@ -107,7 +107,7 @@ func parseEnergyEvery(p *Parser) (parseFn, error) {
 			default:
 				return nil, fmt.Errorf("ln%v: unrecognized energy event specified: %v", n.line, n.Val)
 			}
-		case itemTerminateLine:
+		case ItemTerminateLine:
 			return parseRows, nil
 		default:
 			return nil, fmt.Errorf("ln%v: unrecognized token parsing energy event: %v", n.line, n)

@@ -13,13 +13,13 @@ func parseTarget(p *Parser) (parseFn, error) {
 	var r enemy.EnemyProfile
 	r.Resist = make(map[attributes.Element]float64)
 	r.ParticleElement = attributes.NoElement
-	for n := p.next(); n.Typ != itemEOF; n = p.next() {
+	for n := p.next(); n.Typ != ItemEOF; n = p.next() {
 		switch n.Typ {
-		case itemIdentifier:
+		case ItemIdentifier:
 			switch n.Val {
 			case "pos": //pos will end up defaulting to 0,0 if not set
 				//pos=1.00,2,00
-				item, err := p.acceptSeqReturnLast(itemAssign, itemNumber)
+				item, err := p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 				if err != nil {
 					return nil, err
 				}
@@ -27,7 +27,7 @@ func parseTarget(p *Parser) (parseFn, error) {
 				if err != nil {
 					return nil, err
 				}
-				item, err = p.acceptSeqReturnLast(itemComma, itemNumber)
+				item, err = p.acceptSeqReturnLast(ItemComma, ItemNumber)
 				if err != nil {
 					return nil, err
 				}
@@ -38,7 +38,7 @@ func parseTarget(p *Parser) (parseFn, error) {
 				r.Pos.X = x
 				r.Pos.Y = y
 			case "radius":
-				item, err := p.acceptSeqReturnLast(itemAssign, itemNumber)
+				item, err := p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 				if err != nil {
 					return nil, err
 				}
@@ -50,17 +50,17 @@ func parseTarget(p *Parser) (parseFn, error) {
 			default:
 				return nil, fmt.Errorf("<target> bad token at line %v - %v: %v", n.line, n.pos, n)
 			}
-		case keywordLvl:
-			n, err = p.acceptSeqReturnLast(itemAssign, itemNumber)
+		case KeywordLvl:
+			n, err = p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 			if err == nil {
 				r.Level, err = itemNumberToInt(n)
 			}
-		case itemStatKey:
+		case ItemStatKey:
 			//should be hp
 			if statKeys[n.Val] != attributes.HP {
 				return nil, fmt.Errorf("<target> bad token at line %v - %v: %v", n.line, n.pos, n)
 			}
-			n, err = p.acceptSeqReturnLast(itemAssign, itemNumber)
+			n, err = p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 			if err == nil {
 				r.HP, err = itemNumberToFloat64(n)
 				if err != nil {
@@ -68,9 +68,9 @@ func parseTarget(p *Parser) (parseFn, error) {
 				}
 				p.res.Settings.DamageMode = true
 			}
-		case keywordResist:
+		case KeywordResist:
 			//this sets all resistance
-			item, err := p.acceptSeqReturnLast(itemAssign, itemNumber)
+			item, err := p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 			if err != nil {
 				return nil, err
 			}
@@ -88,8 +88,8 @@ func parseTarget(p *Parser) (parseFn, error) {
 			r.Resist[attributes.Geo] += amt
 			r.Resist[attributes.Dendro] += amt
 			r.Resist[attributes.Anemo] += amt
-		case keywordParticleThreshold:
-			item, err := p.acceptSeqReturnLast(itemAssign, itemNumber)
+		case KeywordParticleThreshold:
+			item, err := p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 			if err != nil {
 				return nil, err
 			}
@@ -98,8 +98,8 @@ func parseTarget(p *Parser) (parseFn, error) {
 				return nil, err
 			}
 			r.ParticleDropThreshold = amt
-		case keywordParticleDropCount:
-			item, err := p.acceptSeqReturnLast(itemAssign, itemNumber)
+		case KeywordParticleDropCount:
+			item, err := p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 			if err != nil {
 				return nil, err
 			}
@@ -108,9 +108,9 @@ func parseTarget(p *Parser) (parseFn, error) {
 				return nil, err
 			}
 			r.ParticleDropCount = amt
-		case itemElementKey:
+		case ItemElementKey:
 			s := n.Val
-			item, err := p.acceptSeqReturnLast(itemAssign, itemNumber)
+			item, err := p.acceptSeqReturnLast(ItemAssign, ItemNumber)
 			if err != nil {
 				return nil, err
 			}
@@ -120,7 +120,7 @@ func parseTarget(p *Parser) (parseFn, error) {
 			}
 
 			r.Resist[eleKeys[s]] += amt
-		case itemTerminateLine:
+		case ItemTerminateLine:
 			p.res.Targets = append(p.res.Targets, r)
 			return parseRows, nil
 		default:

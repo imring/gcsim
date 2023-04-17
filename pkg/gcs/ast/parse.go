@@ -38,7 +38,7 @@ var precedences = map[TokenType]precedence{
 	ItemMinus:            Sum,
 	ItemForwardSlash:     Product,
 	ItemAsterisk:         Product,
-	itemLeftParen:        Call,
+	ItemLeftParen:        Call,
 }
 
 func (t Token) precedence() precedence {
@@ -119,10 +119,10 @@ func (p *Parser) Parse() (*ActionList, error) {
 
 func parseRows(p *Parser) (parseFn, error) {
 	switch n := p.peek(); n.Typ {
-	case itemCharacterKey:
+	case ItemCharacterKey:
 		p.next()
 		//check if this is character stats etc or an action
-		if p.peek().Typ != itemActionKey {
+		if p.peek().Typ != ItemActionKey {
 			//not an ActionStmt
 			//set up char and set key
 			key, ok := shortcut.CharNameToKey[n.Val]
@@ -145,29 +145,29 @@ func parseRows(p *Parser) (parseFn, error) {
 		}
 		p.res.Program.append(node)
 		return parseRows, nil
-	case keywordActive:
+	case KeywordActive:
 		p.next()
 		//next should be char then end line
-		char, err := p.consume(itemCharacterKey)
+		char, err := p.consume(ItemCharacterKey)
 		if err != nil {
 			return nil, fmt.Errorf("ln%v: setting active char: invalid char %v", char.line, char.Val)
 		}
 		p.res.InitialChar = shortcut.CharNameToKey[char.Val]
-		n, err := p.consume(itemTerminateLine)
+		n, err := p.consume(ItemTerminateLine)
 		if err != nil {
 			return nil, fmt.Errorf("ln%v: expecting ; after active <char>, got %v", n.line, n.Val)
 		}
 		return parseRows, nil
-	case keywordTarget:
+	case KeywordTarget:
 		p.next()
 		return parseTarget, nil
-	case keywordEnergy:
+	case KeywordEnergy:
 		p.next()
 		return parseEnergy, nil
-	case keywordOptions:
+	case KeywordOptions:
 		p.next()
 		return parseOptions, nil
-	case itemEOF:
+	case ItemEOF:
 		return nil, nil
 	default: //default should be look for gcsl
 		node, err := p.parseStatement()
@@ -186,44 +186,44 @@ func (p *Parser) parseStatement() (Node, error) {
 	var node Node
 	var err error
 	switch n := p.peek(); n.Typ {
-	case keywordBreak:
+	case KeywordBreak:
 		fallthrough
-	case keywordFallthrough:
+	case KeywordFallthrough:
 		fallthrough
-	case keywordContinue:
+	case KeywordContinue:
 		stmtType = "continue"
 		node, err = p.parseCtrl()
-	case keywordLet:
+	case KeywordLet:
 		stmtType = "let"
 		node, err = p.parseLet()
-	case itemCharacterKey:
+	case ItemCharacterKey:
 		stmtType = "char action"
 		node, err = p.parseAction()
-	case keywordReturn:
+	case KeywordReturn:
 		stmtType = "return"
 		node, err = p.parseReturn()
-	case keywordIf:
+	case KeywordIf:
 		node, err = p.parseIf()
 		hasSemi = false
-	case keywordSwitch:
+	case KeywordSwitch:
 		node, err = p.parseSwitch()
 		hasSemi = false
-	case keywordFn:
+	case KeywordFn:
 		node, err = p.parseFn(true)
 		hasSemi = false
-	case keywordWhile:
+	case KeywordWhile:
 		node, err = p.parseWhile()
 		hasSemi = false
-	case keywordFor:
+	case KeywordFor:
 		node, err = p.parseFor()
 		hasSemi = false
-	case itemLeftBrace:
+	case ItemLeftBrace:
 		node, err = p.parseBlock()
 		hasSemi = false
-	case itemIdentifier:
+	case ItemIdentifier:
 		p.next()
 		//check if = after
-		if x := p.peek(); x.Typ == itemAssign {
+		if x := p.peek(); x.Typ == ItemAssign {
 			p.backup()
 			node, err = p.parseAssign()
 			break
@@ -240,7 +240,7 @@ func (p *Parser) parseStatement() (Node, error) {
 	}
 	//check for semi
 	if hasSemi {
-		n, err := p.consume(itemTerminateLine)
+		n, err := p.consume(ItemTerminateLine)
 		if err != nil {
 			return nil, fmt.Errorf("ln%v: expecting ; at end of %v statement, got %v", n.line, stmtType, n.Val)
 		}
@@ -252,13 +252,13 @@ func (p *Parser) parseStatement() (Node, error) {
 func (p *Parser) parseLet() (Stmt, error) {
 	n := p.next()
 
-	ident, err := p.consume(itemIdentifier)
+	ident, err := p.consume(ItemIdentifier)
 	if err != nil {
 		//next token not an identifier
 		return nil, fmt.Errorf("ln%v: expecting identifier after let, got %v", ident.line, ident.Val)
 	}
 
-	a, err := p.consume(itemAssign)
+	a, err := p.consume(ItemAssign)
 	if err != nil {
 		//next token not and identifier
 		return nil, fmt.Errorf("ln%v: expecting = after identifier in let statement, got %v", a.line, a.Val)
@@ -278,13 +278,13 @@ func (p *Parser) parseLet() (Stmt, error) {
 // expecting ident = expr
 func (p *Parser) parseAssign() (Stmt, error) {
 
-	ident, err := p.consume(itemIdentifier)
+	ident, err := p.consume(ItemIdentifier)
 	if err != nil {
 		//next token not and identifier
 		return nil, fmt.Errorf("ln%v: expecting identifier in assign statement, got %v", ident.line, ident.Val)
 	}
 
-	a, err := p.consume(itemAssign)
+	a, err := p.consume(ItemAssign)
 	if err != nil {
 		//next token not and identifier
 		return nil, fmt.Errorf("ln%v: expecting = after identifier in assign statement, got %v", a.line, a.Val)
@@ -321,7 +321,7 @@ func (p *Parser) parseIf() (Stmt, error) {
 	}
 
 	//expecting a { next
-	if n := p.peek(); n.Typ != itemLeftBrace {
+	if n := p.peek(); n.Typ != ItemLeftBrace {
 		return nil, fmt.Errorf("ln%v: expecting { after if, got %v", n.line, n.Val)
 	}
 
@@ -331,7 +331,7 @@ func (p *Parser) parseIf() (Stmt, error) {
 	}
 
 	//stop if no else
-	if n := p.peek(); n.Typ != keywordElse {
+	if n := p.peek(); n.Typ != KeywordElse {
 		return stmt, nil
 	}
 
@@ -355,7 +355,7 @@ func (p *Parser) parseIf() (Stmt, error) {
 func (p *Parser) parseSwitch() (Stmt, error) {
 
 	//switch expr { }
-	n, err := p.consume(keywordSwitch)
+	n, err := p.consume(KeywordSwitch)
 	if err != nil {
 		panic("unreachable")
 	}
@@ -365,7 +365,7 @@ func (p *Parser) parseSwitch() (Stmt, error) {
 	}
 
 	//condition can be optional; if next item is itemLeftBrace then simply set condition to 1
-	if n := p.peek(); n.Typ != itemLeftBrace {
+	if n := p.peek(); n.Typ != ItemLeftBrace {
 		stmt.Condition, err = p.parseExpr(Lowest)
 		if err != nil {
 			return nil, err
@@ -374,16 +374,16 @@ func (p *Parser) parseSwitch() (Stmt, error) {
 		stmt.Condition = nil
 	}
 
-	if n := p.next(); n.Typ != itemLeftBrace {
+	if n := p.next(); n.Typ != ItemLeftBrace {
 		return nil, fmt.Errorf("ln%v: expecting { after switch, got %v", n.line, n.Val)
 	}
 
 	//look for cases while not }
-	for n := p.next(); n.Typ != itemRightBrace; n = p.next() {
+	for n := p.next(); n.Typ != ItemRightBrace; n = p.next() {
 		var err error
 		//expecting case expr: block
 		switch n.Typ {
-		case keywordCase:
+		case KeywordCase:
 			cs := &CaseStmt{
 				Pos: n.pos,
 			}
@@ -392,7 +392,7 @@ func (p *Parser) parseSwitch() (Stmt, error) {
 				return nil, err
 			}
 			//colon, then read until we hit next case
-			if n := p.peek(); n.Typ != itemColon {
+			if n := p.peek(); n.Typ != ItemColon {
 				return nil, fmt.Errorf("ln%v: expecting : after case, got %v", n.line, n.Val)
 			}
 			cs.Body, err = p.parseCaseBody()
@@ -400,9 +400,9 @@ func (p *Parser) parseSwitch() (Stmt, error) {
 				return nil, err
 			}
 			stmt.Cases = append(stmt.Cases, cs)
-		case keywordDefault:
+		case KeywordDefault:
 			//colon, then read until we hit next case
-			if p.peek().Typ != itemColon {
+			if p.peek().Typ != ItemColon {
 				return nil, fmt.Errorf("ln%v: expecting : after default, got %v", n.line, n.Val)
 			}
 			stmt.Default, err = p.parseCaseBody()
@@ -427,19 +427,19 @@ func (p *Parser) parseCaseBody() (*BlockStmt, error) {
 	for {
 		//make sure we don't get any illegal lines
 		switch n := p.peek(); n.Typ {
-		case itemCharacterKey:
+		case ItemCharacterKey:
 			if !p.peekValidCharAction() {
 				n := p.next()
 				n = p.next()
 				return nil, fmt.Errorf("ln%v: expecting action after character token, got %v", n.line, n.Val)
 			}
-		case keywordDefault:
+		case KeywordDefault:
 			fallthrough
-		case keywordCase:
+		case KeywordCase:
 			fallthrough
-		case itemRightBrace:
+		case ItemRightBrace:
 			return block, nil
-		case itemEOF:
+		case ItemEOF:
 			return nil, fmt.Errorf("reached end of file without closing }")
 		}
 		//parse statement here
@@ -467,7 +467,7 @@ func (p *Parser) parseWhile() (Stmt, error) {
 	}
 
 	//expecting a { next
-	if n := p.peek(); n.Typ != itemLeftBrace {
+	if n := p.peek(); n.Typ != ItemLeftBrace {
 		return nil, fmt.Errorf("ln%v: expecting { after while, got %v", n.line, n.Val)
 	}
 
@@ -480,11 +480,11 @@ func (p *Parser) parseWhile() (Stmt, error) {
 // for { <body > }
 func (p *Parser) existVarDecl() bool {
 	switch n := p.peek(); n.Typ {
-	case keywordLet:
+	case KeywordLet:
 		return true
-	case itemIdentifier:
+	case ItemIdentifier:
 		p.next()
-		b := p.peek().Typ == itemAssign
+		b := p.peek().Typ == ItemAssign
 		p.backup()
 		return b
 	}
@@ -500,14 +500,14 @@ func (p *Parser) parseFor() (Stmt, error) {
 
 	var err error
 
-	if n := p.peek(); n.Typ == itemLeftBrace {
+	if n := p.peek(); n.Typ == ItemLeftBrace {
 		stmt.Body, err = p.parseBlock() //parse block here
 		return stmt, err
 	}
 
 	//init
 	if p.existVarDecl() {
-		if n := p.peek(); n.Typ == keywordLet {
+		if n := p.peek(); n.Typ == KeywordLet {
 			stmt.Init, err = p.parseLet()
 		} else {
 			stmt.Init, err = p.parseAssign()
@@ -516,7 +516,7 @@ func (p *Parser) parseFor() (Stmt, error) {
 			return nil, err
 		}
 
-		if n := p.peek(); n.Typ != itemTerminateLine {
+		if n := p.peek(); n.Typ != ItemTerminateLine {
 			return nil, fmt.Errorf("ln%v: expecting ; after statement, got %v", n.line, n.Val)
 		}
 		p.next() //skip ;
@@ -529,9 +529,9 @@ func (p *Parser) parseFor() (Stmt, error) {
 	}
 
 	//post
-	if n := p.peek(); n.Typ == itemTerminateLine {
+	if n := p.peek(); n.Typ == ItemTerminateLine {
 		p.next() //skip ;
-		if n := p.peek(); n.Typ != itemLeftBrace {
+		if n := p.peek(); n.Typ != ItemLeftBrace {
 			stmt.Post, err = p.parseAssign()
 			if err != nil {
 				return nil, err
@@ -540,7 +540,7 @@ func (p *Parser) parseFor() (Stmt, error) {
 	}
 
 	//expecting a { next
-	if n := p.peek(); n.Typ != itemLeftBrace {
+	if n := p.peek(); n.Typ != ItemLeftBrace {
 		return nil, fmt.Errorf("ln%v: expecting { after for, got %v", n.line, n.Val)
 	}
 
@@ -560,14 +560,14 @@ func (p *Parser) parseFn(indent bool) (Stmt, error) {
 	var err error
 	if indent {
 		//ident next
-		n, err := p.consume(itemIdentifier)
+		n, err := p.consume(ItemIdentifier)
 		if err != nil {
 			return nil, fmt.Errorf("ln%v: expecting identifier after fn, got %v", n.line, n.Val)
 		}
 		stmt.FunVal = n
 	}
 
-	if l := p.peek(); l.Typ != itemLeftParen {
+	if l := p.peek(); l.Typ != ItemLeftParen {
 		return nil, fmt.Errorf("ln%v: expecting ( after identifier, got %v", l.line, l.Val)
 	}
 
@@ -596,10 +596,10 @@ func (p *Parser) parseFnArgs() ([]*Ident, error) {
 	//consume (
 	var args []*Ident
 	p.next()
-	for n := p.next(); n.Typ != itemRightParen; n = p.next() {
+	for n := p.next(); n.Typ != ItemRightParen; n = p.next() {
 		a := &Ident{}
 		//expecting ident, comma
-		if n.Typ != itemIdentifier {
+		if n.Typ != ItemIdentifier {
 			return nil, fmt.Errorf("ln%v: expecting identifier in param list, got %v", n.line, n.Val)
 		}
 		a.Pos = n.pos
@@ -609,9 +609,9 @@ func (p *Parser) parseFnArgs() ([]*Ident, error) {
 
 		//if next token is a comma, then there should be another ident after that
 		//otherwise we have a problem
-		if l := p.peek(); l.Typ == itemComma {
+		if l := p.peek(); l.Typ == ItemComma {
 			p.next() //consume the comma
-			if l = p.peek(); l.Typ != itemIdentifier {
+			if l = p.peek(); l.Typ != ItemIdentifier {
 				return nil, fmt.Errorf("ln%v: expecting another identifier after comma in param list, got %v", n.line, n.Val)
 			}
 		}
@@ -635,11 +635,11 @@ func (p *Parser) parseCtrl() (Stmt, error) {
 		Pos: n.pos,
 	}
 	switch n.Typ {
-	case keywordBreak:
+	case KeywordBreak:
 		stmt.Typ = CtrlBreak
-	case keywordContinue:
+	case KeywordContinue:
 		stmt.Typ = CtrlContinue
-	case keywordFallthrough:
+	case KeywordFallthrough:
 		stmt.Typ = CtrlFallthrough
 	default:
 		return nil, fmt.Errorf("ln%v: expecting ctrl token, got %v", n.line, n.Val)
@@ -649,7 +649,7 @@ func (p *Parser) parseCtrl() (Stmt, error) {
 
 func (p *Parser) parseCall(fun Expr) (Expr, error) {
 	//expecting (params)
-	n, err := p.consume(itemLeftParen)
+	n, err := p.consume(ItemLeftParen)
 	if err != nil {
 		return nil, fmt.Errorf("expecting ( after ident, got %v", fun.String())
 	}
@@ -666,7 +666,7 @@ func (p *Parser) parseCall(fun Expr) (Expr, error) {
 func (p *Parser) parseCallArgs() ([]Expr, error) {
 	var args []Expr
 
-	if p.peek().Typ == itemRightParen {
+	if p.peek().Typ == ItemRightParen {
 		//consume the right paren
 		p.next()
 		return args, nil
@@ -679,7 +679,7 @@ func (p *Parser) parseCallArgs() ([]Expr, error) {
 	}
 	args = append(args, exp)
 
-	for p.peek().Typ == itemComma {
+	for p.peek().Typ == ItemComma {
 		p.next() //skip the comma
 		exp, err = p.parseExpr(Lowest)
 		if err != nil {
@@ -688,7 +688,7 @@ func (p *Parser) parseCallArgs() ([]Expr, error) {
 		args = append(args, exp)
 	}
 
-	if n := p.next(); n.Typ != itemRightParen {
+	if n := p.next(); n.Typ != ItemRightParen {
 		p.backup()
 		return nil, fmt.Errorf("ln%v: expecting ) at end of function call, got: %v", n.line, n.pos)
 	}
@@ -700,7 +700,7 @@ func (p *Parser) parseCallArgs() ([]Expr, error) {
 func (p *Parser) peekValidCharAction() bool {
 	p.next()
 	//check if this is character stats etc or an action
-	if p.peek().Typ != itemActionKey {
+	if p.peek().Typ != ItemActionKey {
 		p.backup()
 		//not an ActionStmt
 		return false
@@ -712,7 +712,7 @@ func (p *Parser) peekValidCharAction() bool {
 // parseBlock return a node contain and BlockStmt
 func (p *Parser) parseBlock() (*BlockStmt, error) {
 	//should be surronded by {}
-	n, err := p.consume(itemLeftBrace)
+	n, err := p.consume(ItemLeftBrace)
 	if err != nil {
 		return nil, fmt.Errorf("ln%v: expecting {, got %v", n.line, n.Val)
 	}
@@ -722,16 +722,16 @@ func (p *Parser) parseBlock() (*BlockStmt, error) {
 	for {
 		//make sure we don't get any illegal lines
 		switch n := p.peek(); n.Typ {
-		case itemCharacterKey:
+		case ItemCharacterKey:
 			if !p.peekValidCharAction() {
 				n := p.next()
 				n = p.next()
 				return nil, fmt.Errorf("ln%v: expecting action after character token, got %v", n.line, n.Val)
 			}
-		case itemRightBrace:
+		case ItemRightBrace:
 			p.next() //consume the braces
 			return block, nil
-		case itemEOF:
+		case ItemEOF:
 			return nil, fmt.Errorf("reached end of file without closing }")
 		}
 		//parse statement here
@@ -755,7 +755,7 @@ func (p *Parser) parseExpr(pre precedence) (Expr, error) {
 		return nil, err
 	}
 
-	for n := p.peek(); n.Typ != itemTerminateLine && pre < n.precedence(); n = p.peek() {
+	for n := p.peek(); n.Typ != ItemTerminateLine && pre < n.precedence(); n = p.peek() {
 		infix := p.infixParseFns[n.Typ]
 		if infix == nil {
 			return leftExp, nil
@@ -781,7 +781,7 @@ func (p *Parser) parseField() (Expr, error) {
 	//then concat them all together
 	n := p.next()
 	fields := make([]string, 0, 5)
-	for ; n.Typ == itemField; n = p.next() {
+	for ; n.Typ == ItemField; n = p.next() {
 		fields = append(fields, strings.Trim(n.Val, "."))
 	}
 	//we would have consumed one too many here
@@ -885,7 +885,7 @@ func (p *Parser) parseParen() (Expr, error) {
 		return nil, err
 	}
 
-	if n := p.peek(); n.Typ != itemRightParen {
+	if n := p.peek(); n.Typ != ItemRightParen {
 		return nil, nil
 	}
 	p.next() // consume the right paren
@@ -901,7 +901,7 @@ func (p *Parser) parseMap() (Expr, error) {
 		Fields: make(map[string]Expr),
 	}
 
-	if p.peek().Typ == itemRightSquareParen { // empty map
+	if p.peek().Typ == ItemRightSquareParen { // empty map
 		p.next()
 		return expr, nil
 	}
@@ -909,12 +909,12 @@ func (p *Parser) parseMap() (Expr, error) {
 	//loop until we hit square paren
 	for {
 		//we're expecting ident = int
-		i, err := p.consume(itemIdentifier)
+		i, err := p.consume(ItemIdentifier)
 		if err != nil {
 			return nil, fmt.Errorf("ln%v: expecting identifier in map expression, got %v", i.line, i.Val)
 		}
 
-		a, err := p.consume(itemAssign)
+		a, err := p.consume(ItemAssign)
 		if err != nil {
 			return nil, fmt.Errorf("ln%v: expecting = after identifier in map expression, got %v", a.line, a.Val)
 		}
@@ -928,9 +928,9 @@ func (p *Parser) parseMap() (Expr, error) {
 		//if we hit ], return; if we hit , keep going, other wise error
 		n := p.next()
 		switch n.Typ {
-		case itemRightSquareParen:
+		case ItemRightSquareParen:
 			return expr, nil
-		case itemComma:
+		case ItemComma:
 			//do nothing, keep going
 		default:
 			return nil, fmt.Errorf("ln%v: <action param> bad token %v", n.line, n)

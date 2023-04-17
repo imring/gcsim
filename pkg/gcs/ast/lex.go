@@ -97,7 +97,7 @@ func (l *lexer) acceptRun(valid string) {
 // back a nil pointer that will be the next state, terminating l.nextItem.
 func (l *lexer) errorf(format string, args ...interface{}) stateFn {
 	l.items <- Token{
-		Typ:  itemError,
+		Typ:  ItemError,
 		pos:  l.start,
 		Val:  fmt.Sprintf(format, args...),
 		line: l.startLine,
@@ -147,12 +147,12 @@ func lexText(l *lexer) stateFn {
 	// log.Printf("lexText next is %c\n", n)
 	switch r := l.next(); {
 	case r == eof:
-		l.emit(itemEOF)
+		l.emit(ItemEOF)
 		return nil
 	case r == ';':
-		l.emit(itemTerminateLine)
+		l.emit(ItemTerminateLine)
 	case r == ':':
-		l.emit(itemColon)
+		l.emit(ItemColon)
 	case isSpace(r):
 		l.ignore()
 	case r == '#':
@@ -164,10 +164,10 @@ func lexText(l *lexer) stateFn {
 			l.emit(OpEqual)
 		} else {
 			l.backup()
-			l.emit(itemAssign)
+			l.emit(ItemAssign)
 		}
 	case r == ',':
-		l.emit(itemComma)
+		l.emit(ItemComma)
 	case r == '*':
 		l.emit(ItemAsterisk)
 	case r == '+':
@@ -256,28 +256,28 @@ func lexText(l *lexer) stateFn {
 			return l.errorf("unrecognized character in action: %#U", r)
 		}
 	case r == '(':
-		l.emit(itemLeftParen)
+		l.emit(ItemLeftParen)
 		l.parenDepth++
 	case r == ')':
-		l.emit(itemRightParen)
+		l.emit(ItemRightParen)
 		l.parenDepth--
 		if l.parenDepth < 0 {
 			return l.errorf("unexpected right paren %#U", r)
 		}
 	case r == '[':
-		l.emit(itemLeftSquareParen)
+		l.emit(ItemLeftSquareParen)
 		l.sqParenDepth++
 	case r == ']':
-		l.emit(itemRightSquareParen)
+		l.emit(ItemRightSquareParen)
 		l.sqParenDepth--
 		if l.sqParenDepth < 0 {
 			return l.errorf("unexpected right sq paren %#U", r)
 		}
 	case r == '{':
-		l.emit(itemLeftBrace)
+		l.emit(ItemLeftBrace)
 		l.braceDepth++
 	case r == '}':
-		l.emit(itemRightBrace)
+		l.emit(ItemRightBrace)
 		l.braceDepth--
 		if l.braceDepth < 0 {
 			return l.errorf("unexpected right brace %#U", r)
@@ -310,7 +310,7 @@ Loop:
 // The . has been scanned.
 func lexField(l *lexer) stateFn {
 	if l.atTerminator() { // Nothing interesting follows -> "." or "$".
-		l.emit(itemDot)
+		l.emit(ItemDot)
 		return lexText
 	}
 	var r rune
@@ -324,7 +324,7 @@ func lexField(l *lexer) stateFn {
 	if !l.atTerminator() {
 		return l.errorf("bad character %#U", r)
 	}
-	l.emit(itemField)
+	l.emit(ItemField)
 	return lexText
 }
 
@@ -343,7 +343,7 @@ Loop:
 			break Loop
 		}
 	}
-	l.emit(itemString)
+	l.emit(ItemString)
 	return lexText
 }
 
@@ -361,12 +361,12 @@ Loop:
 				return l.errorf("bad character %#U", r)
 			}
 			switch {
-			case key[word] > itemKeyword:
+			case key[word] > ItemKeyword:
 				l.emit(key[word])
 			case word[0] == '.':
-				l.emit(itemField)
+				l.emit(ItemField)
 			case word == "true", word == "false":
-				l.emit(itemBool)
+				l.emit(ItemBool)
 			default:
 				l.emit(checkIdentifier(word))
 			}
@@ -378,18 +378,18 @@ Loop:
 
 func checkIdentifier(word string) TokenType {
 	if _, ok := statKeys[word]; ok {
-		return itemStatKey
+		return ItemStatKey
 	}
 	if _, ok := eleKeys[word]; ok {
-		return itemElementKey
+		return ItemElementKey
 	}
 	if _, ok := shortcut.CharNameToKey[word]; ok {
-		return itemCharacterKey
+		return ItemCharacterKey
 	}
 	if _, ok := actionKeys[word]; ok {
-		return itemActionKey
+		return ItemActionKey
 	}
-	return itemIdentifier
+	return ItemIdentifier
 }
 
 func lexNumber(l *lexer) stateFn {
@@ -402,7 +402,7 @@ func lexNumber(l *lexer) stateFn {
 		l.acceptRun(digits)
 	}
 
-	l.emit(itemNumber)
+	l.emit(ItemNumber)
 
 	return lexText
 }
