@@ -7,7 +7,7 @@ import (
 
 	"github.com/genshinsim/gcsim/pkg/agg"
 	"github.com/genshinsim/gcsim/pkg/enemy"
-	"github.com/genshinsim/gcsim/pkg/gcs/ast"
+	"github.com/genshinsim/gcsim/pkg/gcs"
 	"github.com/genshinsim/gcsim/pkg/simulation"
 )
 
@@ -59,7 +59,7 @@ type Summary struct {
 }
 
 // TODO: very temporary mess to have the new aggregate system connect to the legacy summary
-func (r *Summary) Map(cfg *ast.ActionList, result *agg.Result) {
+func (r *Summary) Map(cfg *gcs.ActionList, result *agg.Result) {
 	for _, v := range cfg.Characters {
 		r.CharNames = append(r.CharNames, v.Base.Key.String())
 

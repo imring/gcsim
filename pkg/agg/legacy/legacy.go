@@ -5,7 +5,7 @@ import (
 
 	"github.com/genshinsim/gcsim/pkg/agg"
 	"github.com/genshinsim/gcsim/pkg/agg/util"
-	"github.com/genshinsim/gcsim/pkg/gcs/ast"
+	"github.com/genshinsim/gcsim/pkg/gcs"
 	"github.com/genshinsim/gcsim/pkg/stats"
 )
 
@@ -37,7 +37,7 @@ type buffer struct {
 	reactionsTriggered map[string]*util.IntBuffer
 }
 
-func NewAgg(cfg *ast.ActionList) (agg.Aggregator, error) {
+func NewAgg(cfg *gcs.ActionList) (agg.Aggregator, error) {
 	out := buffer{
 		iterations:            cfg.Settings.Iterations,
 		damageOverTime:        make(map[string]*util.FloatBuffer),

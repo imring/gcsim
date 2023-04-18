@@ -3,7 +3,7 @@ package agg
 import (
 	"sync"
 
-	"github.com/genshinsim/gcsim/pkg/gcs/ast"
+	"github.com/genshinsim/gcsim/pkg/gcs"
 	"github.com/genshinsim/gcsim/pkg/stats"
 )
 
@@ -13,7 +13,7 @@ type Aggregator interface {
 	Flush(result *Result)
 }
 
-type NewAggFunc func(cfg *ast.ActionList) (Aggregator, error)
+type NewAggFunc func(cfg *gcs.ActionList) (Aggregator, error)
 
 var (
 	mu          sync.Mutex

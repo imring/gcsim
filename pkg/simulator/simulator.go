@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/genshinsim/gcsim/pkg/agg"
-	"github.com/genshinsim/gcsim/pkg/gcs/ast"
+	"github.com/genshinsim/gcsim/pkg/gcs"
 	"github.com/genshinsim/gcsim/pkg/gcs/parse"
 	"github.com/genshinsim/gcsim/pkg/result"
 	"github.com/genshinsim/gcsim/pkg/stats"
@@ -57,7 +57,7 @@ func Run(opts Options) (result.Summary, error) {
 }
 
 // Runs the simulation with a given parsed config
-func RunWithConfig(cfg string, simcfg *ast.ActionList, opts Options) (result.Summary, error) {
+func RunWithConfig(cfg string, simcfg *gcs.ActionList, opts Options) (result.Summary, error) {
 	// initialize aggregators
 	var aggregators []agg.Aggregator
 	for _, aggregator := range agg.Aggregators() {
@@ -127,7 +127,7 @@ func RunWithConfig(cfg string, simcfg *ast.ActionList, opts Options) (result.Sum
 	return result, nil
 }
 
-func GenerateResult(cfg string, simcfg *ast.ActionList, stats *agg.Result, opts Options) (result.Summary, error) {
+func GenerateResult(cfg string, simcfg *gcs.ActionList, stats *agg.Result, opts Options) (result.Summary, error) {
 	result := result.Summary{
 		V2:            true,
 		Version:       opts.Version,

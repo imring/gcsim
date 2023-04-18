@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/genshinsim/gcsim/pkg/core/keys"
+	"github.com/genshinsim/gcsim/pkg/gcs"
 	"github.com/genshinsim/gcsim/pkg/gcs/ast"
 	"github.com/genshinsim/gcsim/pkg/shortcut"
 )
@@ -50,7 +51,7 @@ func tokenPrecendence(t ast.Token) precedence {
 }
 
 // Parse returns the ActionList and any error that prevents the ActionList from being parsed
-func (p *Parser) Parse() (*ast.ActionList, error) {
+func (p *Parser) Parse() (*gcs.ActionList, error) {
 	var err error
 	for state := parseRows; state != nil; {
 		state, err = state(p)

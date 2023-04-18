@@ -1,7 +1,7 @@
 package worker
 
 import (
-	"github.com/genshinsim/gcsim/pkg/gcs/ast"
+	"github.com/genshinsim/gcsim/pkg/gcs"
 	"github.com/genshinsim/gcsim/pkg/simulation"
 	"github.com/genshinsim/gcsim/pkg/stats"
 )
@@ -14,7 +14,7 @@ type Pool struct {
 }
 
 type Job struct {
-	Cfg  *ast.ActionList
+	Cfg  *gcs.ActionList
 	Seed int64
 }
 

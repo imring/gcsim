@@ -1,4 +1,4 @@
-package ast
+package gcs
 
 import (
 	"encoding/json"
@@ -9,18 +9,23 @@ import (
 	"github.com/genshinsim/gcsim/pkg/core/player"
 	"github.com/genshinsim/gcsim/pkg/core/player/character/profile"
 	"github.com/genshinsim/gcsim/pkg/enemy"
+	"github.com/genshinsim/gcsim/pkg/gcs/ast"
 )
+
+//TODO: these structure here should eventually be replaced with protos
 
 type ActionList struct {
 	Targets     []enemy.EnemyProfile       `json:"targets"`
 	PlayerPos   core.Coord                 `json:"player_initial_pos"`
 	Characters  []profile.CharacterProfile `json:"characters"`
 	InitialChar keys.Char                  `json:"initial"`
-	Program     *BlockStmt                 `json:"-"`
-	Energy      EnergySettings             `json:"energy_settings"`
-	Settings    SimulatorSettings          `json:"settings"`
-	Errors      []error                    `json:"-"` //These represents errors preventing ActionList from being executed
-	ErrorMsgs   []string                   `json:"errors"`
+	//TODO: this one is a bit trouble some to replace; i think ideally this should be an interface that
+	//has an eval method
+	Program   *ast.BlockStmt    `json:"-"`
+	Energy    EnergySettings    `json:"energy_settings"`
+	Settings  SimulatorSettings `json:"settings"`
+	Errors    []error           `json:"-"` //These represents errors preventing ActionList from being executed
+	ErrorMsgs []string          `json:"errors"`
 }
 
 type EnergySettings struct {

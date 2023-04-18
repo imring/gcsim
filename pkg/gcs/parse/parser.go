@@ -10,12 +10,13 @@ import (
 	"github.com/genshinsim/gcsim/pkg/core/keys"
 	"github.com/genshinsim/gcsim/pkg/core/player"
 	"github.com/genshinsim/gcsim/pkg/core/player/character/profile"
+	"github.com/genshinsim/gcsim/pkg/gcs"
 	"github.com/genshinsim/gcsim/pkg/gcs/ast"
 )
 
 type Parser struct {
 	lex *lexer
-	res *ast.ActionList
+	res *gcs.ActionList
 
 	//other information tracked as we parse
 	chars          map[keys.Char]*profile.CharacterProfile
@@ -42,9 +43,9 @@ func New(input string) *Parser {
 		pos:            -1,
 	}
 	p.lex = lex(input)
-	p.res = &ast.ActionList{
+	p.res = &gcs.ActionList{
 		Program: ast.NewBlockStmt(0),
-		Settings: ast.SimulatorSettings{
+		Settings: gcs.SimulatorSettings{
 			EnableHitlag:    true, // default hitlag enabled
 			DefHalt:         true, //default defhalt to true
 			NumberOfWorkers: 20,   //default 20 workers if none set

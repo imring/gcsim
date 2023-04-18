@@ -9,7 +9,7 @@ import (
 	"github.com/genshinsim/gcsim/pkg/core/attributes"
 	"github.com/genshinsim/gcsim/pkg/core/keys"
 	"github.com/genshinsim/gcsim/pkg/core/player/character/profile"
-	"github.com/genshinsim/gcsim/pkg/gcs/ast"
+	"github.com/genshinsim/gcsim/pkg/gcs"
 	"github.com/genshinsim/gcsim/pkg/simulator"
 )
 
@@ -25,7 +25,7 @@ type SubstatOptimizerDetails struct {
 	charWithFavonius       []bool
 	charProfilesERBaseline []profile.CharacterProfile
 	charProfilesCopy       []profile.CharacterProfile
-	simcfg                 *ast.ActionList
+	simcfg                 *gcs.ActionList
 	simopt                 simulator.Options
 	cfg                    string
 	fixedSubstatCount      int
@@ -453,7 +453,7 @@ func (stats *SubstatOptimizerDetails) calculateERBaselineHandleFav(i int) {
 func NewSubstatOptimizerDetails(
 	cfg string,
 	simopt simulator.Options,
-	simcfg *ast.ActionList,
+	simcfg *gcs.ActionList,
 	indivLiquidCap int,
 	totalLiquidSubstats int,
 	fixedSubstatCount int,

@@ -9,7 +9,8 @@ import (
 	"time"
 
 	"github.com/genshinsim/gcsim/pkg/agg"
-	"github.com/genshinsim/gcsim/pkg/gcs/ast"
+	"github.com/genshinsim/gcsim/pkg/gcs"
+	"github.com/genshinsim/gcsim/pkg/gcs/parse"
 	"github.com/genshinsim/gcsim/pkg/simulation"
 	"github.com/genshinsim/gcsim/pkg/simulator"
 	"github.com/genshinsim/gcsim/pkg/stats"
@@ -24,7 +25,7 @@ var (
 
 // shared variables
 var cfg string
-var simcfg *ast.ActionList
+var simcfg *gcs.ActionList
 var buffer []byte
 
 // Aggregator variables
@@ -62,7 +63,7 @@ func buildInfo(this js.Value, args []js.Value) interface{} {
 func validateConfig(this js.Value, args []js.Value) interface{} {
 	in := args[0].String()
 
-	parser := ast.New(in)
+	parser := parse.New(in)
 	cfg, err := parser.Parse()
 	if err != nil {
 		return marshal(err)
@@ -207,7 +208,7 @@ func flush(this js.Value, args []js.Value) interface{} {
 // internal helper functions
 
 func initialize(raw string) error {
-	parser := ast.New(raw)
+	parser := parse.New(raw)
 	out, err := parser.Parse()
 	if err != nil {
 		return err

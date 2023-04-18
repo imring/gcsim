@@ -5,7 +5,7 @@ import (
 
 	"github.com/genshinsim/gcsim/pkg/agg"
 	"github.com/genshinsim/gcsim/pkg/agg/util"
-	"github.com/genshinsim/gcsim/pkg/gcs/ast"
+	"github.com/genshinsim/gcsim/pkg/gcs"
 	"github.com/genshinsim/gcsim/pkg/stats"
 )
 
@@ -24,7 +24,7 @@ type run struct {
 	dps  float64
 }
 
-func NewAgg(cfg *ast.ActionList) (agg.Aggregator, error) {
+func NewAgg(cfg *gcs.ActionList) (agg.Aggregator, error) {
 	out := buffer{
 		duration: util.NewFloatBuffer(cfg.Settings.Iterations),
 		minRun: run{

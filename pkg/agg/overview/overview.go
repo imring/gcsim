@@ -3,7 +3,7 @@ package overview
 import (
 	"github.com/genshinsim/gcsim/pkg/agg"
 	"github.com/genshinsim/gcsim/pkg/agg/util"
-	"github.com/genshinsim/gcsim/pkg/gcs/ast"
+	"github.com/genshinsim/gcsim/pkg/gcs"
 	"github.com/genshinsim/gcsim/pkg/stats"
 )
 
@@ -16,7 +16,7 @@ type buffer struct {
 	totalDamage *util.FloatBuffer
 }
 
-func NewAgg(cfg *ast.ActionList) (agg.Aggregator, error) {
+func NewAgg(cfg *gcs.ActionList) (agg.Aggregator, error) {
 	out := buffer{
 		dps:         util.NewFloatBuffer(cfg.Settings.Iterations),
 		totalDamage: util.NewFloatBuffer(cfg.Settings.Iterations),
