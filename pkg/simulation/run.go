@@ -9,7 +9,7 @@ import (
 	"github.com/genshinsim/gcsim/pkg/core/event"
 	"github.com/genshinsim/gcsim/pkg/core/glog"
 	"github.com/genshinsim/gcsim/pkg/core/player"
-	"github.com/genshinsim/gcsim/pkg/gcs"
+	"github.com/genshinsim/gcsim/pkg/gcs/eval"
 	"github.com/genshinsim/gcsim/pkg/stats"
 )
 
@@ -30,7 +30,7 @@ func (s *Simulation) Run() (stats.Result, error) {
 	s.nextAction = make(chan *action.ActionEval)
 	s.continueEval = make(chan bool)
 	s.evalErr = make(chan error)
-	s.queuer = gcs.Eval{
+	s.queuer = eval.Eval{
 		AST:  s.cfg.Program,
 		Next: s.continueEval,
 		Work: s.nextAction,

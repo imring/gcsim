@@ -1,4 +1,4 @@
-package gcs
+package eval
 
 import (
 	"errors"
@@ -44,8 +44,8 @@ func (e *Env) v(s string) (*Obj, error) {
 	return nil, fmt.Errorf("variable %v does not exist", s)
 }
 
-//Run will execute the provided AST. Any genshin specific actions will be passed
-//back to the
+// Run will execute the provided AST. Any genshin specific actions will be passed
+// back to the
 func (e *Eval) Run() Obj {
 	if e.Log == nil {
 		e.Log = log.New(ioutil.Discard, "", log.LstdFlags)
@@ -93,7 +93,7 @@ const (
 	// typTerminate
 )
 
-//various Obj types
+// various Obj types
 type (
 	null   struct{}
 	number struct {

@@ -6,6 +6,7 @@ import (
 	"github.com/genshinsim/gcsim/pkg/core/action"
 	"github.com/genshinsim/gcsim/pkg/core/geometry"
 	"github.com/genshinsim/gcsim/pkg/gcs"
+	"github.com/genshinsim/gcsim/pkg/gcs/eval"
 	"github.com/genshinsim/gcsim/pkg/stats"
 )
 
@@ -19,7 +20,7 @@ type Simulation struct {
 	nextAction    chan *action.ActionEval
 	continueEval  chan bool
 	evalErr       chan error
-	queuer        gcs.Eval
+	queuer        eval.Eval
 	noMoreActions bool
 	collectors    []stats.StatsCollector
 

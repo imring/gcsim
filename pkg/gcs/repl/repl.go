@@ -7,7 +7,7 @@ import (
 	"log"
 
 	"github.com/genshinsim/gcsim/pkg/core/action"
-	"github.com/genshinsim/gcsim/pkg/gcs"
+	"github.com/genshinsim/gcsim/pkg/gcs/eval"
 	"github.com/genshinsim/gcsim/pkg/gcs/parse"
 )
 
@@ -43,7 +43,7 @@ func Eval(s string, log *log.Logger) {
 		return
 	}
 	fmt.Println("Running program...:")
-	eval := gcs.Eval{
+	eval := eval.Eval{
 		AST:  res.Program,
 		Next: done,
 		Work: simActions,
@@ -85,7 +85,7 @@ func Start(in io.Reader, out io.Writer, log *log.Logger, showProgram bool) {
 			fmt.Println(res.Program.String())
 		}
 
-		eval := gcs.Eval{
+		eval := eval.Eval{
 			AST:  res.Program,
 			Next: next,
 			Work: simActions,
