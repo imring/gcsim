@@ -5,22 +5,22 @@ import (
 	"github.com/genshinsim/gcsim/pkg/model"
 )
 
-func ConvertProtoStat(s model.StatType) attributes.Stat {
+func ConvertProtoProp(s model.StatType) attributes.Prop {
 	switch s {
 	case model.StatType_INVALID_STAT_TYPE:
-		return attributes.NoStat
+		return attributes.NoProp
 	case model.StatType_FIGHT_PROP_DEFENSE_PERCENT:
-		return attributes.DEFP
+		return attributes.DEFPercent
 	case model.StatType_FIGHT_PROP_DEFENSE:
 		return attributes.DEF
 	case model.StatType_FIGHT_PROP_HP:
 		return attributes.HP
 	case model.StatType_FIGHT_PROP_HP_PERCENT:
-		return attributes.HPP
+		return attributes.HPPercent
 	case model.StatType_FIGHT_PROP_ATTACK:
 		return attributes.ATK
 	case model.StatType_FIGHT_PROP_ATTACK_PERCENT:
-		return attributes.ATKP
+		return attributes.ATKPercent
 	case model.StatType_FIGHT_PROP_CHARGE_EFFICIENCY:
 		return attributes.ER
 	case model.StatType_FIGHT_PROP_ELEMENT_MASTERY:
@@ -30,7 +30,7 @@ func ConvertProtoStat(s model.StatType) attributes.Stat {
 	case model.StatType_FIGHT_PROP_CRITICAL_HURT:
 		return attributes.CD
 	case model.StatType_FIGHT_PROP_HEAL_ADD:
-		return attributes.Heal
+		return attributes.HealBonus
 	case model.StatType_FIGHT_PROP_FIRE_ADD_HURT:
 		return attributes.PyroP
 	case model.StatType_FIGHT_PROP_WATER_ADD_HURT:
@@ -48,47 +48,46 @@ func ConvertProtoStat(s model.StatType) attributes.Stat {
 	case model.StatType_FIGHT_PROP_PHYSICAL_ADD_HURT:
 		return attributes.PhyP
 	case model.StatType_FIGHT_PROP_SHIELD_COST_MINUS_RATIO_ADD_HURT:
-		// TODO: this is not a stat for gcsim yet
-		return attributes.NoStat
+		//TODO: this is not a stat for gcsim yet
+		return attributes.NoProp
 	case model.StatType_FIGHT_PROP_HEALED_ADD:
-		// TODO: this is for incoming heal i believe
-		return attributes.NoStat
+		return attributes.HealTaken
 	case model.StatType_FIGHT_PROP_BASE_HP:
-		return attributes.BaseHP
+		return attributes.HPBase
 	case model.StatType_FIGHT_PROP_BASE_ATTACK:
-		return attributes.BaseATK
+		return attributes.ATKBase
 	case model.StatType_FIGHT_PROP_BASE_DEFENSE:
-		return attributes.BaseDEF
+		return attributes.DEFBase
 	case model.StatType_FIGHT_PROP_MAX_HP:
-		// TODO: this is for maxhp which is not a stat for us
-		return attributes.NoStat
+		//TODO: this is for maxhp which is not a stat for us
+		return attributes.NoProp
 	default:
-		return attributes.NoStat
+		return attributes.NoProp
 	}
 }
 
-func ConvertProtoElement(e model.Element) attributes.Element {
+func ConvertProtoElement(e model.Element) attributes.ElementType {
 	switch e {
 	case model.Element_Electric:
-		return attributes.Electro
+		return attributes.ElementElectric
 	case model.Element_Fire:
-		return attributes.Pyro
+		return attributes.ElementFire
 	case model.Element_Ice:
-		return attributes.Cryo
+		return attributes.ElementIce
 	case model.Element_Water:
-		return attributes.Hydro
+		return attributes.ElementWater
 	case model.Element_Grass:
-		return attributes.Dendro
-	case model.Element_ELEMENT_QUICKEN:
-		return attributes.Quicken
-	case model.Element_ELEMENT_FROZEN:
-		return attributes.Frozen
+		return attributes.ElementGrass
+	case model.Element_Overdose:
+		return attributes.ElementOverdose
+	case model.Element_Frozen:
+		return attributes.ElementFrozen
 	case model.Element_Wind:
-		return attributes.Anemo
+		return attributes.ElementWind
 	case model.Element_Rock:
-		return attributes.Geo
+		return attributes.ElementRock
 	default:
-		return attributes.NoElement
+		return attributes.ElementNone
 	}
 }
 
@@ -130,7 +129,7 @@ func ConvertWeaponClass(w model.WeaponClass) WeaponClass {
 	case model.WeaponClass_WEAPON_CATALYST:
 		return WeaponClassCatalyst
 	default:
-		// TODO: we should have an invalid?
+		//TODO: we should have an invalid?
 		return WeaponClassSword
 	}
 }
@@ -148,7 +147,7 @@ func ConvertBodyType(b model.BodyType) BodyType {
 	case model.BodyType_BODY_LOLI:
 		return BodyLoli
 	default:
-		// TODO: no invalid
+		//TODO: no invalid
 		return BodyMale
 	}
 }

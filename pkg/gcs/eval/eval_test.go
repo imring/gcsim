@@ -5,7 +5,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/genshinsim/gcsim/pkg/core/action"
+	"github.com/genshinsim/gcsim/pkg/core/info"
 	"github.com/genshinsim/gcsim/pkg/gcs/parser"
 )
 
@@ -15,11 +15,11 @@ func TestType(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	eval, _ := NewEvaluator(gcsl, nil)
+	eval, _ := NewEvaluator(gcsl)
 	eval.Log = log.Default()
 	resultChan := make(chan Obj)
 	go func() {
-		res, err := eval.Run()
+		res, err := eval.Run(nil)
 		fmt.Printf("done with result: %v, err: %v\n", res, err)
 		resultChan <- res
 	}()
@@ -52,13 +52,13 @@ func TestForceTerminate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	eval, _ := NewEvaluator(gcsl, nil)
+	eval, _ := NewEvaluator(gcsl)
 	eval.Log = log.Default()
 	go func() {
-		res, err := eval.Run()
+		res, err := eval.Run(nil)
 		fmt.Printf("done with result: %v, err: %v\n", res, err)
 	}()
-	for range 4 {
+	for i := 0; i < 4; i++ {
 		eval.Continue()
 		a, err := eval.NextAction()
 		if err != nil {
@@ -80,7 +80,7 @@ func TestForceTerminate(t *testing.T) {
 		t.Error(err)
 	}
 	// confirm that NextAction now returns nil
-	for range 4 {
+	for i := 0; i < 4; i++ {
 		eval.Continue()
 		a, err := eval.NextAction()
 		if err != nil {
@@ -99,10 +99,10 @@ func TestSleepAsWaitAlias(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	eval, _ := NewEvaluator(gcsl, nil)
+	eval, _ := NewEvaluator(gcsl)
 	eval.Log = log.Default()
 	go func() {
-		res, err := eval.Run()
+		res, err := eval.Run(nil)
 		fmt.Printf("done with result: %v, err: %v\n", res, err)
 	}()
 	eval.Continue()
@@ -114,7 +114,7 @@ func TestSleepAsWaitAlias(t *testing.T) {
 		t.Error("unexpected next action is nil")
 		t.FailNow()
 	}
-	if a.Action != action.ActionWait {
+	if a.Action != info.ActionWait {
 		t.Errorf("expecting action to be wait, got %v", a.Action.String())
 	}
 	err = eval.Exit()
@@ -137,10 +137,10 @@ func TestDoneCheck(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	eval, _ := NewEvaluator(gcsl, nil)
+	eval, _ := NewEvaluator(gcsl)
 	eval.Log = log.Default()
 	go func() {
-		res, err := eval.Run()
+		res, err := eval.Run(nil)
 		fmt.Printf("done with result: %v, err: %v\n", res, err)
 	}()
 	count := 0
@@ -160,7 +160,7 @@ func TestDoneCheck(t *testing.T) {
 		t.Errorf("expecting NextAction to be called 4 times, got %v", count)
 	}
 	// confirm that NextAction continues to return nil
-	for range 4 {
+	for i := 0; i < 4; i++ {
 		a, err := eval.NextAction()
 		if err != nil {
 			t.Errorf("unexpected error when checking for NextAction() should be nil: %v", err)

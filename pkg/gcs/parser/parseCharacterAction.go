@@ -3,10 +3,10 @@ package parser
 import (
 	"fmt"
 
-	"github.com/genshinsim/gcsim/pkg/core/action"
+	"github.com/genshinsim/gcsim/pkg/core/info"
+	"github.com/genshinsim/gcsim/pkg/core/shortcut"
 	"github.com/genshinsim/gcsim/pkg/gcs/ast"
 	"github.com/genshinsim/gcsim/pkg/gcs/validation"
-	"github.com/genshinsim/gcsim/pkg/shortcut"
 )
 
 // parseAction returns a node contain a character action, or a block of node containing
@@ -33,7 +33,7 @@ Loop:
 			// stop here
 			break Loop
 		case ast.ItemActionKey:
-			actionKey := action.StringToAction(n.Val)
+			actionKey := info.StringToAction(n.Val)
 			expr := &ast.CallExpr{
 				Pos: char.Pos,
 				Fun: &ast.Ident{
@@ -83,8 +83,8 @@ Loop:
 				return nil, err
 			}
 			// add to array
-			for range count {
-				// TODO: all the repeated action will access the same map
+			for i := 0; i < count; i++ {
+				//TODO: all the repeated action will access the same map
 				// ability implement should avoid modifying the maps
 				actions = append(actions, expr)
 			}
@@ -95,7 +95,7 @@ Loop:
 				break Loop
 			}
 		default:
-			// TODO: fix invalid key error
+			//TODO: fix invalid key error
 			return nil, fmt.Errorf("ln%v: expecting actions for character %v, got %v", n.Line, char.Val, n.Val)
 		}
 	}

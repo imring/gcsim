@@ -7,8 +7,8 @@ import (
 	"github.com/genshinsim/gcsim/pkg/core/attributes"
 	"github.com/genshinsim/gcsim/pkg/core/info"
 	"github.com/genshinsim/gcsim/pkg/core/keys"
+	"github.com/genshinsim/gcsim/pkg/core/shortcut"
 	"github.com/genshinsim/gcsim/pkg/gcs/ast"
-	"github.com/genshinsim/gcsim/pkg/shortcut"
 )
 
 func parseCharacter(p *Parser) (parseFn, error) {
@@ -29,7 +29,7 @@ func parseCharacter(p *Parser) (parseFn, error) {
 func (p *Parser) newChar(key keys.Char) {
 	r := info.CharacterProfile{}
 	r.Base.Key = key
-	r.Stats = make([]float64, attributes.EndStatType)
+	r.Stats = make([]float64, attributes.EndPropType)
 	r.StatsByLabel = make(map[string][]float64)
 	r.Params = make(map[string]int)
 	r.Sets = make(map[keys.Set]int)
@@ -250,7 +250,7 @@ func parseCharAddStats(p *Parser) (parseFn, error) {
 	c := p.chars[p.currentCharKey]
 
 	// each line will be parsed separately into the map
-	line := make([]float64, attributes.EndStatType)
+	var line = make([]float64, attributes.EndPropType)
 	var key string
 
 	for n := p.next(); n.Typ != ast.ItemEOF; n = p.next() {
@@ -276,7 +276,7 @@ func parseCharAddStats(p *Parser) (parseFn, error) {
 			// add stats into label
 			m, ok := c.StatsByLabel[key]
 			if !ok {
-				m = make([]float64, attributes.EndStatType)
+				m = make([]float64, attributes.EndPropType)
 			}
 			for i, v := range line {
 				c.Stats[i] += v

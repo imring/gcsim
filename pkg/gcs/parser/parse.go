@@ -8,8 +8,8 @@ import (
 
 	"github.com/genshinsim/gcsim/pkg/core/info"
 	"github.com/genshinsim/gcsim/pkg/core/keys"
+	"github.com/genshinsim/gcsim/pkg/core/shortcut"
 	"github.com/genshinsim/gcsim/pkg/gcs/ast"
-	"github.com/genshinsim/gcsim/pkg/shortcut"
 )
 
 // Parse returns the ActionList and any error that prevents the ActionList from being parsed
@@ -234,6 +234,7 @@ func (p *Parser) parseAssign() (ast.Stmt, error) {
 	}
 
 	expr, err := p.parseExpr(ast.Lowest)
+
 	if err != nil {
 		return nil, err
 	}
@@ -608,7 +609,6 @@ func (p *Parser) parseBlock() (*ast.BlockStmt, error) {
 		block.Append(node)
 	}
 }
-
 func (p *Parser) parseExpr(pre ast.Precedence) (ast.Expr, error) {
 	t := p.next()
 	prefix := p.prefixParseFns[t.Typ]

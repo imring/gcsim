@@ -81,7 +81,6 @@ var weaponNames = []string{
 	"emeraldorb",
 	"endoftheline",
 	"engulfinglightning",
-	"etherlightspindlelute",
 	"everlastingmoonglow",
 	"eyeofperception",
 	"fadingtwilight",
@@ -139,7 +138,6 @@ var weaponNames = []string{
 	"mistsplitterreforged",
 	"mitternachtswaltz",
 	"moonpiercer",
-	"moonweaversdawn",
 	"mountainbracingbolt",
 	"mouunsmoon",
 	"oathsworneye",
@@ -297,7 +295,6 @@ const (
 	EmeraldOrb
 	EndOfTheLine
 	EngulfingLightning
-	EtherlightSpindlelute
 	EverlastingMoonglow
 	EyeOfPerception
 	FadingTwilight
@@ -355,7 +352,6 @@ const (
 	MistsplitterReforged
 	MitternachtsWaltz
 	Moonpiercer
-	MoonweaversDawn
 	MountainBracingBolt
 	MouunsMoon
 	OathswornEye

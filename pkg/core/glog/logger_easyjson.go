@@ -4,7 +4,6 @@ package glog
 
 import (
 	json "encoding/json"
-
 	easyjson "github.com/mailru/easyjson"
 	jlexer "github.com/mailru/easyjson/jlexer"
 	jwriter "github.com/mailru/easyjson/jwriter"
@@ -18,7 +17,7 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog(in *jlexer.Lexer, out *keyVal) {
+func easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog(in *jlexer.Lexer, out *LogEvent) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -31,107 +30,37 @@ func easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog(in *jlexer.Lexer,
 	for !in.IsDelim('}') {
 		key := in.UnsafeFieldName(false)
 		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
-			in.WantComma()
-			continue
-		}
-		switch key {
-		case "key":
-			out.Key = string(in.UnsafeString())
-		case "val":
-			if m, ok := out.Val.(easyjson.Unmarshaler); ok {
-				m.UnmarshalEasyJSON(in)
-			} else if m, ok := out.Val.(json.Unmarshaler); ok {
-				_ = m.UnmarshalJSON(in.Raw())
-			} else {
-				out.Val = in.Interface()
-			}
-		default:
-			in.SkipRecursive()
-		}
-		in.WantComma()
-	}
-	in.Delim('}')
-	if isTopLevel {
-		in.Consumed()
-	}
-}
-func easyjson22b64118EncodeGithubComGenshinsimGcsimPkgCoreGlog(out *jwriter.Writer, in keyVal) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	{
-		const prefix string = ",\"key\":"
-		out.RawString(prefix[1:])
-		out.String(string(in.Key))
-	}
-	{
-		const prefix string = ",\"val\":"
-		out.RawString(prefix)
-		if m, ok := in.Val.(easyjson.Marshaler); ok {
-			m.MarshalEasyJSON(out)
-		} else if m, ok := in.Val.(json.Marshaler); ok {
-			out.Raw(m.MarshalJSON())
-		} else {
-			out.Raw(json.Marshal(in.Val))
-		}
-	}
-	out.RawByte('}')
-}
-
-// MarshalJSON supports json.Marshaler interface
-func (v keyVal) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjson22b64118EncodeGithubComGenshinsimGcsimPkgCoreGlog(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
-// MarshalEasyJSON supports easyjson.Marshaler interface
-func (v keyVal) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson22b64118EncodeGithubComGenshinsimGcsimPkgCoreGlog(w, v)
-}
-
-// UnmarshalJSON supports json.Unmarshaler interface
-func (v *keyVal) UnmarshalJSON(data []byte) error {
-	r := jlexer.Lexer{Data: data}
-	easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog(&r, v)
-	return r.Error()
-}
-
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *keyVal) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog(l, v)
-}
-func easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog1(in *jlexer.Lexer, out *LogEvent) {
-	isTopLevel := in.IsStart()
-	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
-		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeFieldName(false)
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
-			in.WantComma()
-			continue
-		}
 		switch key {
 		case "event":
-			out.Event = Source(LogSourceFromString[in.String()])
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.Event = Source(in.Int())
+			}
 		case "frame":
-			out.Frame = int(in.Int())
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.Frame = int(in.Int())
+			}
 		case "ended":
-			out.Ended = int(in.Int())
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.Ended = int(in.Int())
+			}
 		case "char_index":
-			out.CharIndex = int(in.Int())
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.CharIndex = int(in.Int())
+			}
 		case "msg":
-			out.Msg = string(in.UnsafeString())
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.Msg = string(in.UnsafeString())
+			}
 		case "logs":
 			if in.IsNull() {
 				in.Skip()
@@ -164,7 +93,11 @@ func easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog1(in *jlexer.Lexer
 					key := string(in.String())
 					in.WantColon()
 					var v2 int
-					v2 = int(in.Int())
+					if in.IsNull() {
+						in.Skip()
+					} else {
+						v2 = int(in.Int())
+					}
 					(out.Ordering)[key] = v2
 					in.WantComma()
 				}
@@ -180,14 +113,14 @@ func easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog1(in *jlexer.Lexer
 		in.Consumed()
 	}
 }
-func easyjson22b64118EncodeGithubComGenshinsimGcsimPkgCoreGlog1(out *jwriter.Writer, in LogEvent) {
+func easyjson22b64118EncodeGithubComGenshinsimGcsimPkgCoreGlog(out *jwriter.Writer, in LogEvent) {
 	out.RawByte('{')
 	first := true
 	_ = first
 	{
 		const prefix string = ",\"event\":"
 		out.RawString(prefix[1:])
-		out.String(in.Event.String())
+		out.Int(int(in.Event))
 	}
 	{
 		const prefix string = ",\"frame\":"
@@ -263,27 +196,27 @@ func easyjson22b64118EncodeGithubComGenshinsimGcsimPkgCoreGlog1(out *jwriter.Wri
 // MarshalJSON supports json.Marshaler interface
 func (v LogEvent) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson22b64118EncodeGithubComGenshinsimGcsimPkgCoreGlog1(&w, v)
+	easyjson22b64118EncodeGithubComGenshinsimGcsimPkgCoreGlog(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v LogEvent) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson22b64118EncodeGithubComGenshinsimGcsimPkgCoreGlog1(w, v)
+	easyjson22b64118EncodeGithubComGenshinsimGcsimPkgCoreGlog(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *LogEvent) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog1(&r, v)
+	easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *LogEvent) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog1(l, v)
+	easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog(l, v)
 }
-func easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog2(in *jlexer.Lexer, out *EventArr) {
+func easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog1(in *jlexer.Lexer, out *EventArr) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		in.Skip()
@@ -308,7 +241,11 @@ func easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog2(in *jlexer.Lexer
 				if v5 == nil {
 					v5 = new(LogEvent)
 				}
-				(*v5).UnmarshalEasyJSON(in)
+				if in.IsNull() {
+					in.Skip()
+				} else {
+					(*v5).UnmarshalEasyJSON(in)
+				}
 			}
 			*out = append(*out, v5)
 			in.WantComma()
@@ -319,7 +256,7 @@ func easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog2(in *jlexer.Lexer
 		in.Consumed()
 	}
 }
-func easyjson22b64118EncodeGithubComGenshinsimGcsimPkgCoreGlog2(out *jwriter.Writer, in EventArr) {
+func easyjson22b64118EncodeGithubComGenshinsimGcsimPkgCoreGlog1(out *jwriter.Writer, in EventArr) {
 	if in == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
 		out.RawString("null")
 	} else {
@@ -341,82 +278,23 @@ func easyjson22b64118EncodeGithubComGenshinsimGcsimPkgCoreGlog2(out *jwriter.Wri
 // MarshalJSON supports json.Marshaler interface
 func (v EventArr) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson22b64118EncodeGithubComGenshinsimGcsimPkgCoreGlog2(&w, v)
+	easyjson22b64118EncodeGithubComGenshinsimGcsimPkgCoreGlog1(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v EventArr) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson22b64118EncodeGithubComGenshinsimGcsimPkgCoreGlog2(w, v)
+	easyjson22b64118EncodeGithubComGenshinsimGcsimPkgCoreGlog1(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *EventArr) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog2(&r, v)
+	easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog1(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *EventArr) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog2(l, v)
-}
-func easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog3(in *jlexer.Lexer, out *Ctrl) {
-	isTopLevel := in.IsStart()
-	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
-		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeFieldName(false)
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
-			in.WantComma()
-			continue
-		}
-		switch key {
-		default:
-			in.SkipRecursive()
-		}
-		in.WantComma()
-	}
-	in.Delim('}')
-	if isTopLevel {
-		in.Consumed()
-	}
-}
-func easyjson22b64118EncodeGithubComGenshinsimGcsimPkgCoreGlog3(out *jwriter.Writer, in Ctrl) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	out.RawByte('}')
-}
-
-// MarshalJSON supports json.Marshaler interface
-func (v Ctrl) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjson22b64118EncodeGithubComGenshinsimGcsimPkgCoreGlog3(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
-// MarshalEasyJSON supports easyjson.Marshaler interface
-func (v Ctrl) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson22b64118EncodeGithubComGenshinsimGcsimPkgCoreGlog3(w, v)
-}
-
-// UnmarshalJSON supports json.Unmarshaler interface
-func (v *Ctrl) UnmarshalJSON(data []byte) error {
-	r := jlexer.Lexer{Data: data}
-	easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog3(&r, v)
-	return r.Error()
-}
-
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *Ctrl) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog3(l, v)
+	easyjson22b64118DecodeGithubComGenshinsimGcsimPkgCoreGlog1(l, v)
 }

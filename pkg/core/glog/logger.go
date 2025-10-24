@@ -12,35 +12,51 @@ import (
 
 //nolint:staticcheck // staticcheck can't know nocopy is from easyjson and not json: https://github.com/dominikh/go-tools/issues/836
 type keyVal struct {
-	Key string `json:"key,nocopy"`
-	Val any    `json:"val"`
+	Key string      `json:"key,nocopy"`
+	Val interface{} `json:"val"`
 }
 
 //nolint:staticcheck // staticcheck can't know nocopy is from easyjson and not json: https://github.com/dominikh/go-tools/issues/836
 //easyjson:json
 type LogEvent struct {
-	Event     Source         `json:"event"`
-	Frame     int            `json:"frame"`
-	Ended     int            `json:"ended"`
-	CharIndex int            `json:"char_index"`
-	Msg       string         `json:"msg,nocopy"`
-	Logs      map[string]any `json:"logs"`
-	Ordering  map[string]int `json:"ordering"`
+	Event     Source                 `json:"event"`
+	Frame     int                    `json:"frame"`
+	Ended     int                    `json:"ended"`
+	CharIndex int                    `json:"char_index"`
+	Msg       string                 `json:"msg,nocopy"`
+	Logs      map[string]interface{} `json:"logs"`
+	Ordering  map[string]int         `json:"ordering"`
+	logArray  map[string]bool
 	counter   int
 }
 
 //easyjson:json
 type EventArr []*LogEvent
 
-func (e *LogEvent) Write(key string, value any) Event {
-	e.Logs[key] = value
-	e.Ordering[key] = e.counter
-	e.counter++
+func (e *LogEvent) Write(key string, value interface{}) Event {
+	isArray, ok := e.logArray[key]
+	if !ok {
+		e.Logs[key] = value
+		e.Ordering[key] = e.counter
+		e.counter++
+		e.logArray[key] = false
+		return e
+	}
 
+	if !isArray {
+		newSlice := make([]any, 0, 2)
+		newSlice = append(newSlice, e.Logs[key])
+		newSlice = append(newSlice, value)
+		e.Logs[key] = newSlice
+		e.logArray[key] = true
+		return e
+	}
+
+	e.Logs[key] = append(e.Logs[key].([]any), value)
 	return e
 }
 
-func (e *LogEvent) WriteBuildMsg(keysAndValues ...any) Event {
+func (e *LogEvent) WriteBuildMsg(keysAndValues ...interface{}) Event {
 	// should be even number
 	var key string
 	var ok bool
@@ -58,9 +74,7 @@ func (e *LogEvent) WriteBuildMsg(keysAndValues ...any) Event {
 		// 	Key: key,
 		// 	Val: keysAndValues[i],
 		// })
-		e.Logs[key] = keysAndValues[i]
-		e.Ordering[key] = e.counter
-		e.counter++
+		e.Write(key, keysAndValues[i])
 	}
 	return e
 }
@@ -119,8 +133,9 @@ func (c *Ctrl) NewEvent(msg string, typ Source, srcChar int) Event {
 		Ended:     *c.f,
 		Event:     typ,
 		CharIndex: srcChar,
-		Logs:      make(map[string]any), //+5 from default just in case we need to add in more keys
+		Logs:      make(map[string]interface{}), //+5 from default just in case we need to add in more keys
 		Ordering:  make(map[string]int),
+		logArray:  make(map[string]bool),
 	}
 	// c.events = append(c.events, e)
 	c.events[c.count] = e

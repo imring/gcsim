@@ -15,6 +15,7 @@ const Prompt = ">> "
 func Eval(s string, log *log.Logger) {
 	p := parser.New(s)
 	res, gcsl, err := p.Parse()
+
 	if err != nil {
 		fmt.Println("Error parsing input:")
 		fmt.Printf("\t%v\n", err)
@@ -36,12 +37,12 @@ func Eval(s string, log *log.Logger) {
 		return
 	}
 	fmt.Println("Running program...:")
-	e, _ := eval.NewEvaluator(gcsl, nil)
+	e, _ := eval.NewEvaluator(gcsl)
 	e.Log = log
 	resultChan := make(chan eval.Obj)
 	errChan := make(chan error)
 	go func() {
-		res, err := e.Run()
+		res, err := e.Run(nil)
 		// fmt.Printf("done with result: %v, err: %v\n", res, err)
 		resultChan <- res
 		errChan <- err

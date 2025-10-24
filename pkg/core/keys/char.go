@@ -37,11 +37,8 @@ func (c Char) Pretty() string {
 	return charPrettyName[c]
 }
 
-const (
-	ChildePassive = "childe-talent-passive"
-	SkirkPassive  = "skirk-talent-passive"
-)
-
+const ChildePassive = "childe-talent-passive"
+const SkirkPassive = "skirk-talent-passive"
 const (
 	NoChar Char = iota
 	AetherAnemo
@@ -107,20 +104,20 @@ var charPrettyName = [EndCharKeys]string{
 	"!!!TEST CHAR DO NOT USE!!!",
 }
 
-var CharKeyToEle = map[Char]attributes.Element{
-	AetherAnemo:      attributes.Anemo,
-	LumineAnemo:      attributes.Anemo,
-	AetherGeo:        attributes.Geo,
-	LumineGeo:        attributes.Geo,
-	AetherElectro:    attributes.Electro,
-	LumineElectro:    attributes.Electro,
-	AetherDendro:     attributes.Dendro,
-	LumineDendro:     attributes.Dendro,
-	AetherHydro:      attributes.Hydro,
-	LumineHydro:      attributes.Hydro,
-	AetherPyro:       attributes.Pyro,
-	LuminePyro:       attributes.Pyro,
-	AetherCryo:       attributes.Cryo,
-	LumineCryo:       attributes.Cryo,
-	TestCharDoNotUse: attributes.Geo,
+var CharKeyToEle = map[Char]attributes.ElementType{
+	AetherAnemo:      attributes.ElementWind,
+	LumineAnemo:      attributes.ElementWind,
+	AetherGeo:        attributes.ElementRock,
+	LumineGeo:        attributes.ElementRock,
+	AetherElectro:    attributes.ElementElectric,
+	LumineElectro:    attributes.ElementElectric,
+	AetherDendro:     attributes.ElementGrass,
+	LumineDendro:     attributes.ElementGrass,
+	AetherHydro:      attributes.ElementWater,
+	LumineHydro:      attributes.ElementWater,
+	AetherPyro:       attributes.ElementFire,
+	LuminePyro:       attributes.ElementFire,
+	AetherCryo:       attributes.ElementIce,
+	LumineCryo:       attributes.ElementIce,
+	TestCharDoNotUse: attributes.ElementRock,
 }

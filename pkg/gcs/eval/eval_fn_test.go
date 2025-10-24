@@ -27,11 +27,11 @@ func TestFib(t *testing.T) {
 	}
 	fmt.Println("program:")
 	fmt.Println(gcsl.String())
-	eval, _ := NewEvaluator(gcsl, nil)
+	eval, _ := NewEvaluator(gcsl)
 	eval.Log = log.Default()
 	resultChan := make(chan Obj)
 	go func() {
-		res, err := eval.Run()
+		res, err := eval.Run(nil)
 		fmt.Printf("done with result: %v, err: %v\n", res, err)
 		resultChan <- res
 	}()
@@ -82,11 +82,11 @@ func TestFunctional(t *testing.T) {
 	}
 	fmt.Println("program:")
 	fmt.Println(gcsl.String())
-	eval, _ := NewEvaluator(gcsl, nil)
+	eval, _ := NewEvaluator(gcsl)
 	eval.Log = log.Default()
 	resultChan := make(chan Obj)
 	go func() {
-		res, err := eval.Run()
+		res, err := eval.Run(nil)
 		fmt.Printf("done with result: %v, err: %v\n", res, err)
 		resultChan <- res
 	}()
@@ -130,11 +130,11 @@ func TestAnonFunc(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	eval, _ := NewEvaluator(gcsl, nil)
+	eval, _ := NewEvaluator(gcsl)
 	eval.Log = log.Default()
 	resultChan := make(chan Obj)
 	go func() {
-		res, err := eval.Run()
+		res, err := eval.Run(nil)
 		fmt.Printf("done with result: %v, err: %v\n", res, err)
 		resultChan <- res
 	}()
@@ -178,11 +178,11 @@ func TestStringFunc(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	eval, _ := NewEvaluator(gcsl, nil)
+	eval, _ := NewEvaluator(gcsl)
 	eval.Log = log.Default()
 	resultChan := make(chan Obj)
 	go func() {
-		res, err := eval.Run()
+		res, err := eval.Run(nil)
 		fmt.Printf("done with result: %v, err: %v\n", res, err)
 		resultChan <- res
 	}()
@@ -229,11 +229,11 @@ func TestNestedActions(t *testing.T) {
 	}
 	fmt.Println("program:")
 	fmt.Println(gcsl.String())
-	eval, _ := NewEvaluator(gcsl, nil)
+	eval, _ := NewEvaluator(gcsl)
 	eval.Log = log.Default()
 	resultChan := make(chan Obj)
 	go func() {
-		res, err := eval.Run()
+		res, err := eval.Run(nil)
 		fmt.Printf("done with result: %v, err: %v\n", res, err)
 		if err != nil {
 			log.Fatalf("test run failed with error: %v", err)
@@ -269,11 +269,11 @@ func TestIsEven(t *testing.T) {
 	}
 	fmt.Println("program:")
 	fmt.Println(gcsl.String())
-	eval, _ := NewEvaluator(gcsl, nil)
+	eval, _ := NewEvaluator(gcsl)
 	eval.Log = log.Default()
 	resultChan := make(chan Obj)
 	go func() {
-		res, err := eval.Run()
+		res, err := eval.Run(nil)
 		fmt.Printf("done with result: %v, err: %v\n", res, err)
 		resultChan <- res
 	}()

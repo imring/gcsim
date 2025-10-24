@@ -22,9 +22,3 @@ const (
 	GadgetTypTest
 	EndGadgetTyp
 )
-
-type Gadget interface {
-	Target
-	Src() int
-	GadgetTyp() GadgetTyp
-}

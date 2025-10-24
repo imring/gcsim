@@ -6,15 +6,14 @@ import (
 
 	"github.com/genshinsim/gcsim/pkg/core/attributes"
 	"github.com/genshinsim/gcsim/pkg/core/info"
-	"github.com/genshinsim/gcsim/pkg/enemy"
 	"github.com/genshinsim/gcsim/pkg/gcs/ast"
 )
 
 func parseTarget(p *Parser) (parseFn, error) {
 	var err error
 	var r info.EnemyProfile
-	r.Resist = make(map[attributes.Element]float64)
-	r.ParticleElement = attributes.NoElement
+	r.Resist = make(attributes.ElementMap)
+	r.ParticleElement = attributes.ElementNone
 	for n := p.next(); n.Typ != ast.ItemEOF; n = p.next() {
 		switch n.Typ {
 		case ast.ItemIdentifier:
@@ -47,20 +46,21 @@ func parseTarget(p *Parser) (parseFn, error) {
 					return nil, err
 				}
 				r.Pos.R = amt
-			case "type":
-				item, err := p.acceptSeqReturnLast(ast.ItemAssign, ast.ItemIdentifier)
-				if err != nil {
-					return nil, err
-				}
-				params, err := p.acceptOptionalTargetParams()
-				if err != nil {
-					return nil, err
-				}
-				err = enemy.ConfigureTarget(&r, item.Val, params)
-				if err != nil {
-					return nil, err
-				}
-				p.res.Settings.DamageMode = true
+			// TODO: enemy type
+			// case "type":
+			// 	item, err := p.acceptSeqReturnLast(ast.ItemAssign, ast.ItemIdentifier)
+			// 	if err != nil {
+			// 		return nil, err
+			// 	}
+			// 	params, err := p.acceptOptionalTargetParams()
+			// 	if err != nil {
+			// 		return nil, err
+			// 	}
+			// 	err = enemy.ConfigureTarget(&r, item.Val, params)
+			// 	if err != nil {
+			// 		return nil, err
+			// 	}
+			// 	p.res.Settings.DamageMode = true
 			case "freeze_resist":
 				if _, err := p.consume(ast.ItemAssign); err != nil {
 					return nil, err
@@ -103,7 +103,8 @@ func parseTarget(p *Parser) (parseFn, error) {
 				return nil, err
 			}
 
-			res := []attributes.Element{attributes.Electro, attributes.Cryo, attributes.Hydro, attributes.Physical, attributes.Pyro, attributes.Geo, attributes.Dendro, attributes.Anemo}
+			// TODO: maybe physical instead of none?
+			res := []attributes.ElementType{attributes.ElementElectric, attributes.ElementIce, attributes.ElementWater, attributes.ElementNone, attributes.ElementFire, attributes.ElementRock, attributes.ElementGrass, attributes.ElementWind}
 			for _, attr := range res {
 				r.Resist[attr] += amt
 			}
@@ -119,7 +120,7 @@ func parseTarget(p *Parser) (parseFn, error) {
 			}
 			r.ParticleDropThreshold = amt
 			r.ParticleDrops = nil // separate particle system
-			r.ParticleElement = attributes.NoElement
+			r.ParticleElement = attributes.ElementNone
 			r.Modified = true
 		case ast.KeywordParticleDropCount:
 			item, err := p.acceptSeqReturnLast(ast.ItemAssign, ast.ItemNumber)
@@ -166,55 +167,55 @@ func parseTarget(p *Parser) (parseFn, error) {
 	return nil, errors.New("unexpected end of line while parsing target")
 }
 
-func (p *Parser) acceptOptionalTargetParams() (enemy.TargetParams, error) {
-	result := enemy.TargetParams{
-		HpMultiplier: 0.0,
-		Particles:    true,
-	}
+// func (p *Parser) acceptOptionalTargetParams() (enemy.TargetParams, error) {
+// 	result := enemy.TargetParams{
+// 		HpMultiplier: 0.0,
+// 		Particles:    true,
+// 	}
 
-	// check for params
-	n := p.next()
-	if n.Typ != ast.ItemLeftSquareParen {
-		p.backup()
-		return result, nil
-	}
+// 	// check for params
+// 	n := p.next()
+// 	if n.Typ != ast.ItemLeftSquareParen {
+// 		p.backup()
+// 		return result, nil
+// 	}
 
-	// loop until we hit square paren
-	for {
-		// we're expecting ident = int
-		i, err := p.consume(ast.ItemIdentifier)
-		if err != nil {
-			return result, err
-		}
+// 	// loop until we hit square paren
+// 	for {
+// 		// we're expecting ident = int
+// 		i, err := p.consume(ast.ItemIdentifier)
+// 		if err != nil {
+// 			return result, err
+// 		}
 
-		item, err := p.acceptSeqReturnLast(ast.ItemAssign, ast.ItemNumber)
-		if err != nil {
-			return result, err
-		}
+// 		item, err := p.acceptSeqReturnLast(ast.ItemAssign, ast.ItemNumber)
+// 		if err != nil {
+// 			return result, err
+// 		}
 
-		switch i.Val {
-		case "hp_mult":
-			result.HpMultiplier, err = itemNumberToFloat64(item)
-			if err != nil {
-				return result, err
-			}
-		case "particles":
-			val, err := itemNumberToInt(item)
-			if err != nil {
-				return result, err
-			}
-			result.Particles = val != 0
-		}
+// 		switch i.Val {
+// 		case "hp_mult":
+// 			result.HpMultiplier, err = itemNumberToFloat64(item)
+// 			if err != nil {
+// 				return result, err
+// 			}
+// 		case "particles":
+// 			val, err := itemNumberToInt(item)
+// 			if err != nil {
+// 				return result, err
+// 			}
+// 			result.Particles = val != 0
+// 		}
 
-		// if we hit ], return; if we hit , keep going, other wise error
-		n := p.next()
-		switch n.Typ {
-		case ast.ItemRightSquareParen:
-			return result, nil
-		case ast.ItemComma:
-			// do nothing, keep going
-		default:
-			return result, fmt.Errorf("ln%v: <action param> bad token %v", n.Line, n)
-		}
-	}
-}
+// 		// if we hit ], return; if we hit , keep going, other wise error
+// 		n := p.next()
+// 		switch n.Typ {
+// 		case ast.ItemRightSquareParen:
+// 			return result, nil
+// 		case ast.ItemComma:
+// 			// do nothing, keep going
+// 		default:
+// 			return result, fmt.Errorf("ln%v: <action param> bad token %v", n.Line, n)
+// 		}
+// 	}
+// }

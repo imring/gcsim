@@ -3,7 +3,7 @@ package validation
 import (
 	"sync"
 
-	"github.com/genshinsim/gcsim/pkg/core/action"
+	"github.com/genshinsim/gcsim/pkg/core/info"
 	"github.com/genshinsim/gcsim/pkg/core/keys"
 )
 
@@ -12,7 +12,7 @@ var (
 	charValidParamKeys = make(map[keys.Char]CharParamKeysValidationFunc)
 )
 
-type CharParamKeysValidationFunc func(a action.Action, p []string) error
+type CharParamKeysValidationFunc func(a info.Action, p []string) error
 
 func RegisterCharParamValidationFunc(char keys.Char, f CharParamKeysValidationFunc) {
 	mu.Lock()

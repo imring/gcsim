@@ -2,131 +2,72 @@ package character
 
 import (
 	"fmt"
+	"strings"
 
-	"github.com/genshinsim/gcsim/pkg/core/action"
+	"github.com/genshinsim/gcsim/pkg/core"
 	"github.com/genshinsim/gcsim/pkg/core/attributes"
-	"github.com/genshinsim/gcsim/pkg/core/event"
 	"github.com/genshinsim/gcsim/pkg/core/glog"
 	"github.com/genshinsim/gcsim/pkg/core/info"
 	"github.com/genshinsim/gcsim/pkg/core/keys"
+	"github.com/genshinsim/gcsim/pkg/core/modifier"
+	"github.com/genshinsim/gcsim/pkg/core/target"
 	"github.com/genshinsim/gcsim/pkg/core/task"
+	"github.com/genshinsim/gcsim/pkg/geometry"
 	"github.com/genshinsim/gcsim/pkg/model"
-	"github.com/genshinsim/gcsim/pkg/modifier"
+	"github.com/genshinsim/gcsim/pkg/tags"
 )
 
-type Character interface {
-	Base
-	HP
+type Character struct {
+	*target.Target
 
-	Init() error // init function built into every char to setup any variables etc.
+	core core.Core
 
-	Attack(p map[string]int) (action.Info, error)
-	Aimed(p map[string]int) (action.Info, error)
-	ChargeAttack(p map[string]int) (action.Info, error)
-	HighPlungeAttack(p map[string]int) (action.Info, error)
-	LowPlungeAttack(p map[string]int) (action.Info, error)
-	Skill(p map[string]int) (action.Info, error)
-	Burst(p map[string]int) (action.Info, error)
-	Dash(p map[string]int) (action.Info, error)
-	Walk(p map[string]int) (action.Info, error)
-	Jump(p map[string]int) (action.Info, error)
+	Index int
 
-	ActionStam(a action.Action, p map[string]int) float64
+	// base
+	Base    info.CharacterBase
+	Weapon  info.WeaponProfile
+	Talents info.TalentProfile
+	Sets    info.Sets
+	data    *model.AvatarData
 
-	ActionReady(a action.Action, p map[string]int) (bool, action.Failure)
-	NextQueueItemIsValid(targetChar keys.Char, a action.Action, p map[string]int) error
-	SetCD(a action.Action, dur int)
-	Cooldown(a action.Action) int
-	ResetActionCooldown(a action.Action)
-	ReduceActionCooldown(a action.Action, v int)
-	Charges(a action.Action) int
+	Equip    core.EquipInfo
+	CharZone info.ZoneType
+	CharBody info.BodyType
 
-	Snapshot(a *info.AttackInfo) info.Snapshot
-
-	AddEnergy(src string, amt float64)
-
-	ApplyHitlag(factor, dur float64)
-	AnimationStartDelay(info.AnimationDelayKey) int
-
-	Condition([]string) (any, error)
-
-	ResetNormalCounter()
-	NextNormalCounter() int
-}
-
-// Base contains basic information for a character
-type Base interface {
-	Data() *model.AvatarData
-}
-
-// HP contains info and helper for dealing with character hp
-type HP interface {
-	CurrentHPRatio() float64
-	CurrentHP() float64
-	CurrentHPDebt() float64
-	CurrentHPDebtRatio() float64
-
-	SetHPByAmount(float64)
-	SetHPByRatio(float64)
-	ModifyHPByAmount(float64)
-	ModifyHPByRatio(float64)
-
-	ModifyHPDebtByAmount(float64)
-	ModifyHPDebtByRatio(float64)
-
-	Heal(*info.HealInfo) (float64, float64) // return actual hp healed and amount of hp debt cleared
-	Drain(*info.DrainInfo) float64
-
-	ReceiveHeal(*info.HealInfo, float64) float64
-}
-
-type CharWrapper struct {
-	index int
-	f     *int // current frame
-	debug bool // debug mode?
-	Character
-	events event.Eventter
-	log    glog.Logger
-	tasks  task.Tasker
-
-	// base characteristics
-	Base      info.CharacterBase
-	Weapon    info.WeaponProfile
-	Talents   info.TalentProfile
-	CharZone  info.ZoneType
-	CharBody  info.BodyType
 	NormalCon int
 	SkillCon  int
 	BurstCon  int
-	HasArkhe  bool
 
-	Equip struct {
-		Weapon info.Weapon
-		Sets   map[keys.Set]info.Set
-	}
+	// stats
+	BaseProps attributes.Props
+	Modifiers *modifier.Handler
+	Tags      tags.Tags
 
 	// current status
 	ParticleDelay int // character custom particle delay
-	Energy        float64
-	EnergyMax     float64
-	// needed so that start hp is not influenced by hp mods added during team initialization
-	StartHP      int
-	StartHPRatio int
+	energy        float64
+	energyMax     float64
 
 	// normal attack counter
-	NormalHitNum  int // how many hits in a normal combo
-	NormalCounter int
+	normalHitNum  int // how many hits in a normal combo
+	normalCounter int
 
-	// tags
-	Tags      map[string]int
-	BaseStats [attributes.EndStatType]float64
+	// hp
+	currentHPRatio float64
+	currentHPDebt  float64
 
-	// mods
-	mods []modifier.Mod
+	// cd
+	ActionCD               []int
+	cdQueueWorkerStartedAt []int
+	cdCurrentQueueWorker   []*func()
+	cdQueue                [][]int
+	AvailableCDCharge      []int
+	additionalCDCharge     []int
 
 	// dash cd: keeps track of remaining cd frames for off-field chars
-	RemainingDashCD int
-	DashLockout     bool
+	remainingDashCD int
+	dashLockout     bool
 
 	// hitlag stuff
 	TimePassed   int // how many frames have passed since start of sim
@@ -134,38 +75,56 @@ type CharWrapper struct {
 	queue        *task.Handler
 }
 
-func New(
-	p info.CharacterProfile,
-	f *int, // current frame
-	debug bool, // are we running in debug mode
-	log glog.Logger, // logging, can be nil
-	events event.Eventter, // event emitter
-	tasker task.Tasker,
-) (*CharWrapper, error) {
-	c := &CharWrapper{
-		Base:          p.Base,
-		Weapon:        p.Weapon,
-		Talents:       p.Talents,
-		ParticleDelay: 100, // default particle delay
-		log:           log,
-		events:        events,
-		tasks:         tasker,
-		Tags:          make(map[string]int),
-		mods:          make([]modifier.Mod, 0, 20),
-		f:             f,
-		debug:         debug,
+type Opt struct {
+	Core    core.Core
+	Profile info.CharacterProfile
+	Data    *model.AvatarData
+
+	EnergyMax    float64
+	NormalHitNum int
+	NormalCon    int
+	SkillCon     int
+	BurstCon     int
+}
+
+func New(opt Opt) (*Character, error) {
+	c := &Character{
+		core:         opt.Core,
+		Base:         opt.Profile.Base,
+		Weapon:       opt.Profile.Weapon,
+		Talents:      opt.Profile.Talents,
+		data:         opt.Data,
+		NormalCon:    opt.NormalCon,
+		SkillCon:     opt.SkillCon,
+		BurstCon:     opt.BurstCon,
+		energyMax:    opt.EnergyMax,
+		normalHitNum: opt.NormalHitNum,
+
+		ActionCD:               make([]int, info.EndActionType),
+		cdQueueWorkerStartedAt: make([]int, info.EndActionType),
+		cdCurrentQueueWorker:   make([]*func(), info.EndActionType),
+		cdQueue:                make([][]int, info.EndActionType),
+		AvailableCDCharge:      make([]int, info.EndActionType),
+		additionalCDCharge:     make([]int, info.EndActionType),
 	}
+
+	c.Equip.Sets = make(map[keys.Set]core.Set)
+	copy(c.BaseProps[:], opt.Profile.Stats)
+
+	if c.NormalCon <= 0 {
+		c.NormalCon = -1
+	}
+	if c.SkillCon <= 0 {
+		c.SkillCon = -1
+	}
+	if c.BurstCon <= 0 {
+		c.BurstCon = -1
+	}
+
+	c.Target = target.NewTarget(opt.Core, geometry.Point{}, 0) // TODO: radius
+	c.Modifiers = modifier.New(c.core, c.Target.Key())
 	c.queue = task.New(&c.TimePassed)
-	s := (*[attributes.EndStatType]float64)(p.Stats)
-	c.BaseStats = *s
-	c.Equip.Sets = make(map[keys.Set]info.Set)
 
-	// set to -1 by default and let each char specify normal/skill/burst cons
-	c.NormalCon = -1
-	c.SkillCon = -1
-	c.BurstCon = -1
-
-	// check talents
 	if c.Talents.Attack < 1 || c.Talents.Attack > 10 {
 		return nil, fmt.Errorf("invalid talent lvl: attack - %v", c.Talents.Attack)
 	}
@@ -176,38 +135,31 @@ func New(
 		return nil, fmt.Errorf("invalid talent lvl: burst - %v", c.Talents.Burst)
 	}
 
+	for i := 0; i < len(c.cdQueue); i++ {
+		c.cdQueue[i] = make([]int, 0, 4)
+		c.AvailableCDCharge[i] = 1
+	}
+
 	return c, nil
 }
 
-func (c *CharWrapper) SetIndex(index int) {
-	c.index = index
+func (c *Character) Init() error        { return nil }
+func (c *Character) GetIndex() int      { return c.Index }
+func (c *Character) SetIndex(index int) { c.Index = index }
+
+func (c *Character) GetBase() info.CharacterBase    { return c.Base }
+func (c *Character) GetWeapon() info.WeaponProfile  { return c.Weapon }
+func (c *Character) GetTalents() info.TalentProfile { return c.Talents }
+func (c *Character) GetSets() info.Sets             { return c.Sets }
+func (c *Character) Data() *model.AvatarData        { return c.data }
+
+func (c *Character) GetEquip() core.EquipInfo { return c.Equip }
+
+func (c *Character) Condition(fields []string) (any, error) {
+	return false, fmt.Errorf("invalid character condition: .%v.%v", c.Base.Key.String(), strings.Join(fields, "."))
 }
 
-func (c *CharWrapper) Index() int {
-	return c.index
-}
-
-func (c *CharWrapper) SetWeapon(w info.Weapon) {
-	c.Equip.Weapon = w
-}
-
-func (c *CharWrapper) SetArtifactSet(key keys.Set, set info.Set) {
-	c.Equip.Sets[key] = set
-}
-
-func (c *CharWrapper) Tag(key string) int {
-	return c.Tags[key]
-}
-
-func (c *CharWrapper) SetTag(key string, val int) {
-	c.Tags[key] = val
-}
-
-func (c *CharWrapper) RemoveTag(key string) {
-	delete(c.Tags, key)
-}
-
-func (c *CharWrapper) consCheck() {
+func (c *Character) consCheck() {
 	consUnset := 0
 	if c.NormalCon < 0 {
 		consUnset++
@@ -223,10 +175,10 @@ func (c *CharWrapper) consCheck() {
 	}
 }
 
-func (c *CharWrapper) TalentLvlAttack() int {
+func (c *Character) TalentLvlAttack() int {
 	c.consCheck()
 	add := -1
-	if c.Tags[keys.ChildePassive] > 0 {
+	if c.Tag(keys.ChildePassive) > 0 {
 		add++
 	}
 	if c.NormalCon > 0 && c.Base.Cons >= c.NormalCon {
@@ -238,10 +190,10 @@ func (c *CharWrapper) TalentLvlAttack() int {
 	return c.Talents.Attack + add
 }
 
-func (c *CharWrapper) TalentLvlSkill() int {
+func (c *Character) TalentLvlSkill() int {
 	c.consCheck()
 	add := -1
-	if c.Tags[keys.SkirkPassive] > 0 {
+	if c.Tag(keys.SkirkPassive) > 0 {
 		add++
 	}
 	if c.SkillCon > 0 && c.Base.Cons >= c.SkillCon {
@@ -253,7 +205,7 @@ func (c *CharWrapper) TalentLvlSkill() int {
 	return c.Talents.Skill + add
 }
 
-func (c *CharWrapper) TalentLvlBurst() int {
+func (c *Character) TalentLvlBurst() int {
 	c.consCheck()
 	add := -1
 	if c.BurstCon > 0 && c.Base.Cons >= c.BurstCon {
@@ -265,8 +217,24 @@ func (c *CharWrapper) TalentLvlBurst() int {
 	return c.Talents.Burst + add
 }
 
-type Particle struct {
-	Source string
-	Num    float64
-	Ele    attributes.Element
+func (c *Character) SetWeapon(w core.Weapon) {
+	c.Equip.Weapon = w
+}
+
+func (c *Character) SetArtifactSet(key keys.Set, s core.Set) {
+	c.Equip.Sets[key] = s
+}
+
+func (c *Character) SetDirectionToClosestEnemy() {
+	src := c.Pos()
+	// calculate direction towards closest enemy, or forward direction if none
+	enemy := c.core.ClosestEnemy(src)
+	if enemy == nil {
+		c.SetDirection(geometry.DefaultDirection())
+		return
+	}
+	c.SetDirection(enemy.Pos())
+	c.core.Log().NewEvent("set target direction to closest enemy", glog.LogDebugEvent, -1).
+		Write("enemy key", enemy.Key()).
+		Write("direction", c.Direction())
 }

@@ -28,7 +28,6 @@ const (
 	Clorinde
 	Collei
 	Cyno
-	Dahlia
 	Dehya
 	Diluc
 	Diona
@@ -87,7 +86,6 @@ const (
 	Tartaglia
 	Thoma
 	Tighnari
-	Varesa
 	Venti
 	Wanderer
 	Wriothesley
@@ -110,389 +108,381 @@ const (
 func init() {
 	charNames[Albedo] = "albedo"
 	charPrettyName[Albedo] = "Albedo"
-	CharKeyToEle[Albedo] = attributes.Geo
+	CharKeyToEle[Albedo] = attributes.ElementRock
 
 	charNames[Alhaitham] = "alhaitham"
 	charPrettyName[Alhaitham] = "Alhaitham"
-	CharKeyToEle[Alhaitham] = attributes.Dendro
+	CharKeyToEle[Alhaitham] = attributes.ElementGrass
 
 	charNames[Aloy] = "aloy"
 	charPrettyName[Aloy] = "Aloy"
-	CharKeyToEle[Aloy] = attributes.Cryo
+	CharKeyToEle[Aloy] = attributes.ElementIce
 
 	charNames[Amber] = "amber"
 	charPrettyName[Amber] = "Amber"
-	CharKeyToEle[Amber] = attributes.Pyro
+	CharKeyToEle[Amber] = attributes.ElementFire
 
 	charNames[Arlecchino] = "arlecchino"
 	charPrettyName[Arlecchino] = "Arlecchino"
-	CharKeyToEle[Arlecchino] = attributes.Pyro
+	CharKeyToEle[Arlecchino] = attributes.ElementFire
 
 	charNames[Ayaka] = "ayaka"
 	charPrettyName[Ayaka] = "Ayaka"
-	CharKeyToEle[Ayaka] = attributes.Cryo
+	CharKeyToEle[Ayaka] = attributes.ElementIce
 
 	charNames[Ayato] = "ayato"
 	charPrettyName[Ayato] = "Ayato"
-	CharKeyToEle[Ayato] = attributes.Hydro
+	CharKeyToEle[Ayato] = attributes.ElementWater
 
 	charNames[Baizhu] = "baizhu"
 	charPrettyName[Baizhu] = "Baizhu"
-	CharKeyToEle[Baizhu] = attributes.Dendro
+	CharKeyToEle[Baizhu] = attributes.ElementGrass
 
 	charNames[Barbara] = "barbara"
 	charPrettyName[Barbara] = "Barbara"
-	CharKeyToEle[Barbara] = attributes.Hydro
+	CharKeyToEle[Barbara] = attributes.ElementWater
 
 	charNames[Beidou] = "beidou"
 	charPrettyName[Beidou] = "Beidou"
-	CharKeyToEle[Beidou] = attributes.Electro
+	CharKeyToEle[Beidou] = attributes.ElementElectric
 
 	charNames[Bennett] = "bennett"
 	charPrettyName[Bennett] = "Bennett"
-	CharKeyToEle[Bennett] = attributes.Pyro
+	CharKeyToEle[Bennett] = attributes.ElementFire
 
 	charNames[Candace] = "candace"
 	charPrettyName[Candace] = "Candace"
-	CharKeyToEle[Candace] = attributes.Hydro
+	CharKeyToEle[Candace] = attributes.ElementWater
 
 	charNames[Charlotte] = "charlotte"
 	charPrettyName[Charlotte] = "Charlotte"
-	CharKeyToEle[Charlotte] = attributes.Cryo
+	CharKeyToEle[Charlotte] = attributes.ElementIce
 
 	charNames[Chasca] = "chasca"
 	charPrettyName[Chasca] = "Chasca"
-	CharKeyToEle[Chasca] = attributes.Anemo
+	CharKeyToEle[Chasca] = attributes.ElementWind
 
 	charNames[Chevreuse] = "chevreuse"
 	charPrettyName[Chevreuse] = "Chevreuse"
-	CharKeyToEle[Chevreuse] = attributes.Pyro
+	CharKeyToEle[Chevreuse] = attributes.ElementFire
 
 	charNames[Chiori] = "chiori"
 	charPrettyName[Chiori] = "Chiori"
-	CharKeyToEle[Chiori] = attributes.Geo
+	CharKeyToEle[Chiori] = attributes.ElementRock
 
 	charNames[Chongyun] = "chongyun"
 	charPrettyName[Chongyun] = "Chongyun"
-	CharKeyToEle[Chongyun] = attributes.Cryo
+	CharKeyToEle[Chongyun] = attributes.ElementIce
 
 	charNames[Citlali] = "citlali"
 	charPrettyName[Citlali] = "Citlali"
-	CharKeyToEle[Citlali] = attributes.Cryo
+	CharKeyToEle[Citlali] = attributes.ElementIce
 
 	charNames[Clorinde] = "clorinde"
 	charPrettyName[Clorinde] = "Clorinde"
-	CharKeyToEle[Clorinde] = attributes.Electro
+	CharKeyToEle[Clorinde] = attributes.ElementElectric
 
 	charNames[Collei] = "collei"
 	charPrettyName[Collei] = "Collei"
-	CharKeyToEle[Collei] = attributes.Dendro
+	CharKeyToEle[Collei] = attributes.ElementGrass
 
 	charNames[Cyno] = "cyno"
 	charPrettyName[Cyno] = "Cyno"
-	CharKeyToEle[Cyno] = attributes.Electro
-
-	charNames[Dahlia] = "dahlia"
-	charPrettyName[Dahlia] = "Dahlia"
-	CharKeyToEle[Dahlia] = attributes.Hydro
+	CharKeyToEle[Cyno] = attributes.ElementElectric
 
 	charNames[Dehya] = "dehya"
 	charPrettyName[Dehya] = "Dehya"
-	CharKeyToEle[Dehya] = attributes.Pyro
+	CharKeyToEle[Dehya] = attributes.ElementFire
 
 	charNames[Diluc] = "diluc"
 	charPrettyName[Diluc] = "Diluc"
-	CharKeyToEle[Diluc] = attributes.Pyro
+	CharKeyToEle[Diluc] = attributes.ElementFire
 
 	charNames[Diona] = "diona"
 	charPrettyName[Diona] = "Diona"
-	CharKeyToEle[Diona] = attributes.Cryo
+	CharKeyToEle[Diona] = attributes.ElementIce
 
 	charNames[Dori] = "dori"
 	charPrettyName[Dori] = "Dori"
-	CharKeyToEle[Dori] = attributes.Electro
+	CharKeyToEle[Dori] = attributes.ElementElectric
 
 	charNames[Emilie] = "emilie"
 	charPrettyName[Emilie] = "Emilie"
-	CharKeyToEle[Emilie] = attributes.Dendro
+	CharKeyToEle[Emilie] = attributes.ElementGrass
 
 	charNames[Escoffier] = "escoffier"
 	charPrettyName[Escoffier] = "Escoffier"
-	CharKeyToEle[Escoffier] = attributes.Cryo
+	CharKeyToEle[Escoffier] = attributes.ElementIce
 
 	charNames[Eula] = "eula"
 	charPrettyName[Eula] = "Eula"
-	CharKeyToEle[Eula] = attributes.Cryo
+	CharKeyToEle[Eula] = attributes.ElementIce
 
 	charNames[Faruzan] = "faruzan"
 	charPrettyName[Faruzan] = "Faruzan"
-	CharKeyToEle[Faruzan] = attributes.Anemo
+	CharKeyToEle[Faruzan] = attributes.ElementWind
 
 	charNames[Fischl] = "fischl"
 	charPrettyName[Fischl] = "Fischl"
-	CharKeyToEle[Fischl] = attributes.Electro
+	CharKeyToEle[Fischl] = attributes.ElementElectric
 
 	charNames[Freminet] = "freminet"
 	charPrettyName[Freminet] = "Freminet"
-	CharKeyToEle[Freminet] = attributes.Cryo
+	CharKeyToEle[Freminet] = attributes.ElementIce
 
 	charNames[Furina] = "furina"
 	charPrettyName[Furina] = "Furina"
-	CharKeyToEle[Furina] = attributes.Hydro
+	CharKeyToEle[Furina] = attributes.ElementWater
 
 	charNames[Gaming] = "gaming"
 	charPrettyName[Gaming] = "Gaming"
-	CharKeyToEle[Gaming] = attributes.Pyro
+	CharKeyToEle[Gaming] = attributes.ElementFire
 
 	charNames[Ganyu] = "ganyu"
 	charPrettyName[Ganyu] = "Ganyu"
-	CharKeyToEle[Ganyu] = attributes.Cryo
+	CharKeyToEle[Ganyu] = attributes.ElementIce
 
 	charNames[Gorou] = "gorou"
 	charPrettyName[Gorou] = "Gorou"
-	CharKeyToEle[Gorou] = attributes.Geo
+	CharKeyToEle[Gorou] = attributes.ElementRock
 
 	charNames[Heizou] = "heizou"
 	charPrettyName[Heizou] = "Heizou"
-	CharKeyToEle[Heizou] = attributes.Anemo
+	CharKeyToEle[Heizou] = attributes.ElementWind
 
 	charNames[Hutao] = "hutao"
 	charPrettyName[Hutao] = "Hutao"
-	CharKeyToEle[Hutao] = attributes.Pyro
+	CharKeyToEle[Hutao] = attributes.ElementFire
 
 	charNames[Itto] = "itto"
 	charPrettyName[Itto] = "Itto"
-	CharKeyToEle[Itto] = attributes.Geo
+	CharKeyToEle[Itto] = attributes.ElementRock
 
 	charNames[Jean] = "jean"
 	charPrettyName[Jean] = "Jean"
-	CharKeyToEle[Jean] = attributes.Anemo
+	CharKeyToEle[Jean] = attributes.ElementWind
 
 	charNames[Kaeya] = "kaeya"
 	charPrettyName[Kaeya] = "Kaeya"
-	CharKeyToEle[Kaeya] = attributes.Cryo
+	CharKeyToEle[Kaeya] = attributes.ElementIce
 
 	charNames[Kaveh] = "kaveh"
 	charPrettyName[Kaveh] = "Kaveh"
-	CharKeyToEle[Kaveh] = attributes.Dendro
+	CharKeyToEle[Kaveh] = attributes.ElementGrass
 
 	charNames[Kazuha] = "kazuha"
 	charPrettyName[Kazuha] = "Kazuha"
-	CharKeyToEle[Kazuha] = attributes.Anemo
+	CharKeyToEle[Kazuha] = attributes.ElementWind
 
 	charNames[Keqing] = "keqing"
 	charPrettyName[Keqing] = "Keqing"
-	CharKeyToEle[Keqing] = attributes.Electro
+	CharKeyToEle[Keqing] = attributes.ElementElectric
 
 	charNames[Kinich] = "kinich"
 	charPrettyName[Kinich] = "Kinich"
-	CharKeyToEle[Kinich] = attributes.Dendro
+	CharKeyToEle[Kinich] = attributes.ElementGrass
 
 	charNames[Kirara] = "kirara"
 	charPrettyName[Kirara] = "Kirara"
-	CharKeyToEle[Kirara] = attributes.Dendro
+	CharKeyToEle[Kirara] = attributes.ElementGrass
 
 	charNames[Klee] = "klee"
 	charPrettyName[Klee] = "Klee"
-	CharKeyToEle[Klee] = attributes.Pyro
+	CharKeyToEle[Klee] = attributes.ElementFire
 
 	charNames[Kokomi] = "kokomi"
 	charPrettyName[Kokomi] = "Kokomi"
-	CharKeyToEle[Kokomi] = attributes.Hydro
+	CharKeyToEle[Kokomi] = attributes.ElementWater
 
 	charNames[Kuki] = "kuki"
 	charPrettyName[Kuki] = "Kuki"
-	CharKeyToEle[Kuki] = attributes.Electro
+	CharKeyToEle[Kuki] = attributes.ElementElectric
 
 	charNames[Lanyan] = "lanyan"
 	charPrettyName[Lanyan] = "Lanyan"
-	CharKeyToEle[Lanyan] = attributes.Anemo
+	CharKeyToEle[Lanyan] = attributes.ElementWind
 
 	charNames[Layla] = "layla"
 	charPrettyName[Layla] = "Layla"
-	CharKeyToEle[Layla] = attributes.Cryo
+	CharKeyToEle[Layla] = attributes.ElementIce
 
 	charNames[Lisa] = "lisa"
 	charPrettyName[Lisa] = "Lisa"
-	CharKeyToEle[Lisa] = attributes.Electro
+	CharKeyToEle[Lisa] = attributes.ElementElectric
 
 	charNames[Lynette] = "lynette"
 	charPrettyName[Lynette] = "Lynette"
-	CharKeyToEle[Lynette] = attributes.Anemo
+	CharKeyToEle[Lynette] = attributes.ElementWind
 
 	charNames[Lyney] = "lyney"
 	charPrettyName[Lyney] = "Lyney"
-	CharKeyToEle[Lyney] = attributes.Pyro
+	CharKeyToEle[Lyney] = attributes.ElementFire
 
 	charNames[Mavuika] = "mavuika"
 	charPrettyName[Mavuika] = "Mavuika"
-	CharKeyToEle[Mavuika] = attributes.Pyro
+	CharKeyToEle[Mavuika] = attributes.ElementFire
 
 	charNames[Mika] = "mika"
 	charPrettyName[Mika] = "Mika"
-	CharKeyToEle[Mika] = attributes.Cryo
+	CharKeyToEle[Mika] = attributes.ElementIce
 
 	charNames[Mizuki] = "mizuki"
 	charPrettyName[Mizuki] = "Mizuki"
-	CharKeyToEle[Mizuki] = attributes.Anemo
+	CharKeyToEle[Mizuki] = attributes.ElementWind
 
 	charNames[Mona] = "mona"
 	charPrettyName[Mona] = "Mona"
-	CharKeyToEle[Mona] = attributes.Hydro
+	CharKeyToEle[Mona] = attributes.ElementWater
 
 	charNames[Mualani] = "mualani"
 	charPrettyName[Mualani] = "Mualani"
-	CharKeyToEle[Mualani] = attributes.Hydro
+	CharKeyToEle[Mualani] = attributes.ElementWater
 
 	charNames[Nahida] = "nahida"
 	charPrettyName[Nahida] = "Nahida"
-	CharKeyToEle[Nahida] = attributes.Dendro
+	CharKeyToEle[Nahida] = attributes.ElementGrass
 
 	charNames[Navia] = "navia"
 	charPrettyName[Navia] = "Navia"
-	CharKeyToEle[Navia] = attributes.Geo
+	CharKeyToEle[Navia] = attributes.ElementRock
 
 	charNames[Neuvillette] = "neuvillette"
 	charPrettyName[Neuvillette] = "Neuvillette"
-	CharKeyToEle[Neuvillette] = attributes.Hydro
+	CharKeyToEle[Neuvillette] = attributes.ElementWater
 
 	charNames[Nilou] = "nilou"
 	charPrettyName[Nilou] = "Nilou"
-	CharKeyToEle[Nilou] = attributes.Hydro
+	CharKeyToEle[Nilou] = attributes.ElementWater
 
 	charNames[Ningguang] = "ningguang"
 	charPrettyName[Ningguang] = "Ningguang"
-	CharKeyToEle[Ningguang] = attributes.Geo
+	CharKeyToEle[Ningguang] = attributes.ElementRock
 
 	charNames[Noelle] = "noelle"
 	charPrettyName[Noelle] = "Noelle"
-	CharKeyToEle[Noelle] = attributes.Geo
+	CharKeyToEle[Noelle] = attributes.ElementRock
 
 	charNames[Ororon] = "ororon"
 	charPrettyName[Ororon] = "Ororon"
-	CharKeyToEle[Ororon] = attributes.Electro
+	CharKeyToEle[Ororon] = attributes.ElementElectric
 
 	charNames[Qiqi] = "qiqi"
 	charPrettyName[Qiqi] = "Qiqi"
-	CharKeyToEle[Qiqi] = attributes.Cryo
+	CharKeyToEle[Qiqi] = attributes.ElementIce
 
 	charNames[Raiden] = "raiden"
 	charPrettyName[Raiden] = "Raiden"
-	CharKeyToEle[Raiden] = attributes.Electro
+	CharKeyToEle[Raiden] = attributes.ElementElectric
 
 	charNames[Razor] = "razor"
 	charPrettyName[Razor] = "Razor"
-	CharKeyToEle[Razor] = attributes.Electro
+	CharKeyToEle[Razor] = attributes.ElementElectric
 
 	charNames[Rosaria] = "rosaria"
 	charPrettyName[Rosaria] = "Rosaria"
-	CharKeyToEle[Rosaria] = attributes.Cryo
+	CharKeyToEle[Rosaria] = attributes.ElementIce
 
 	charNames[Sara] = "sara"
 	charPrettyName[Sara] = "Sara"
-	CharKeyToEle[Sara] = attributes.Electro
+	CharKeyToEle[Sara] = attributes.ElementElectric
 
 	charNames[Sayu] = "sayu"
 	charPrettyName[Sayu] = "Sayu"
-	CharKeyToEle[Sayu] = attributes.Anemo
+	CharKeyToEle[Sayu] = attributes.ElementWind
 
 	charNames[Sethos] = "sethos"
 	charPrettyName[Sethos] = "Sethos"
-	CharKeyToEle[Sethos] = attributes.Electro
+	CharKeyToEle[Sethos] = attributes.ElementElectric
 
 	charNames[Shenhe] = "shenhe"
 	charPrettyName[Shenhe] = "Shenhe"
-	CharKeyToEle[Shenhe] = attributes.Cryo
+	CharKeyToEle[Shenhe] = attributes.ElementIce
 
 	charNames[Sigewinne] = "sigewinne"
 	charPrettyName[Sigewinne] = "Sigewinne"
-	CharKeyToEle[Sigewinne] = attributes.Hydro
+	CharKeyToEle[Sigewinne] = attributes.ElementWater
 
 	charNames[Skirk] = "skirk"
 	charPrettyName[Skirk] = "Skirk"
-	CharKeyToEle[Skirk] = attributes.Cryo
+	CharKeyToEle[Skirk] = attributes.ElementIce
 
 	charNames[Sucrose] = "sucrose"
 	charPrettyName[Sucrose] = "Sucrose"
-	CharKeyToEle[Sucrose] = attributes.Anemo
+	CharKeyToEle[Sucrose] = attributes.ElementWind
 
 	charNames[Tartaglia] = "tartaglia"
 	charPrettyName[Tartaglia] = "Tartaglia"
-	CharKeyToEle[Tartaglia] = attributes.Hydro
+	CharKeyToEle[Tartaglia] = attributes.ElementWater
 
 	charNames[Thoma] = "thoma"
 	charPrettyName[Thoma] = "Thoma"
-	CharKeyToEle[Thoma] = attributes.Pyro
+	CharKeyToEle[Thoma] = attributes.ElementFire
 
 	charNames[Tighnari] = "tighnari"
 	charPrettyName[Tighnari] = "Tighnari"
-	CharKeyToEle[Tighnari] = attributes.Dendro
-
-	charNames[Varesa] = "varesa"
-	charPrettyName[Varesa] = "Varesa"
-	CharKeyToEle[Varesa] = attributes.Electro
+	CharKeyToEle[Tighnari] = attributes.ElementGrass
 
 	charNames[Venti] = "venti"
 	charPrettyName[Venti] = "Venti"
-	CharKeyToEle[Venti] = attributes.Anemo
+	CharKeyToEle[Venti] = attributes.ElementWind
 
 	charNames[Wanderer] = "wanderer"
 	charPrettyName[Wanderer] = "Wanderer"
-	CharKeyToEle[Wanderer] = attributes.Anemo
+	CharKeyToEle[Wanderer] = attributes.ElementWind
 
 	charNames[Wriothesley] = "wriothesley"
 	charPrettyName[Wriothesley] = "Wriothesley"
-	CharKeyToEle[Wriothesley] = attributes.Cryo
+	CharKeyToEle[Wriothesley] = attributes.ElementIce
 
 	charNames[Xiangling] = "xiangling"
 	charPrettyName[Xiangling] = "Xiangling"
-	CharKeyToEle[Xiangling] = attributes.Pyro
+	CharKeyToEle[Xiangling] = attributes.ElementFire
 
 	charNames[Xianyun] = "xianyun"
 	charPrettyName[Xianyun] = "Xianyun"
-	CharKeyToEle[Xianyun] = attributes.Anemo
+	CharKeyToEle[Xianyun] = attributes.ElementWind
 
 	charNames[Xiao] = "xiao"
 	charPrettyName[Xiao] = "Xiao"
-	CharKeyToEle[Xiao] = attributes.Anemo
+	CharKeyToEle[Xiao] = attributes.ElementWind
 
 	charNames[Xilonen] = "xilonen"
 	charPrettyName[Xilonen] = "Xilonen"
-	CharKeyToEle[Xilonen] = attributes.Geo
+	CharKeyToEle[Xilonen] = attributes.ElementRock
 
 	charNames[Xingqiu] = "xingqiu"
 	charPrettyName[Xingqiu] = "Xingqiu"
-	CharKeyToEle[Xingqiu] = attributes.Hydro
+	CharKeyToEle[Xingqiu] = attributes.ElementWater
 
 	charNames[Xinyan] = "xinyan"
 	charPrettyName[Xinyan] = "Xinyan"
-	CharKeyToEle[Xinyan] = attributes.Pyro
+	CharKeyToEle[Xinyan] = attributes.ElementFire
 
 	charNames[YaeMiko] = "yaemiko"
 	charPrettyName[YaeMiko] = "Yae Miko"
-	CharKeyToEle[YaeMiko] = attributes.Electro
+	CharKeyToEle[YaeMiko] = attributes.ElementElectric
 
 	charNames[Yanfei] = "yanfei"
 	charPrettyName[Yanfei] = "Yanfei"
-	CharKeyToEle[Yanfei] = attributes.Pyro
+	CharKeyToEle[Yanfei] = attributes.ElementFire
 
 	charNames[Yaoyao] = "yaoyao"
 	charPrettyName[Yaoyao] = "Yaoyao"
-	CharKeyToEle[Yaoyao] = attributes.Dendro
+	CharKeyToEle[Yaoyao] = attributes.ElementGrass
 
 	charNames[Yelan] = "yelan"
 	charPrettyName[Yelan] = "Yelan"
-	CharKeyToEle[Yelan] = attributes.Hydro
+	CharKeyToEle[Yelan] = attributes.ElementWater
 
 	charNames[Yoimiya] = "yoimiya"
 	charPrettyName[Yoimiya] = "Yoimiya"
-	CharKeyToEle[Yoimiya] = attributes.Pyro
+	CharKeyToEle[Yoimiya] = attributes.ElementFire
 
 	charNames[Yunjin] = "yunjin"
 	charPrettyName[Yunjin] = "Yunjin"
-	CharKeyToEle[Yunjin] = attributes.Geo
+	CharKeyToEle[Yunjin] = attributes.ElementRock
 
 	charNames[Zhongli] = "zhongli"
 	charPrettyName[Zhongli] = "Zhongli"
-	CharKeyToEle[Zhongli] = attributes.Geo
+	CharKeyToEle[Zhongli] = attributes.ElementRock
 }

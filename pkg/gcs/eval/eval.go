@@ -8,17 +8,17 @@ import (
 	"strconv"
 
 	"github.com/genshinsim/gcsim/pkg/core"
-	"github.com/genshinsim/gcsim/pkg/core/action"
+	"github.com/genshinsim/gcsim/pkg/core/info"
 	"github.com/genshinsim/gcsim/pkg/gcs/ast"
 )
 
 type Eval struct {
-	Core *core.Core
+	Core core.Core
 	AST  ast.Node
 	Log  *log.Logger
 
-	next chan bool         // wait on this before continuing
-	work chan *action.Eval // send work to this chan
+	next chan bool             // wait on this before continuing
+	work chan *info.ActionEval // send work to this chan
 	// set to non-nil by the first error encountered
 	// this is necessary because Run() could have exited already with an err but
 	err error
@@ -31,12 +31,11 @@ type Env struct {
 	varMap map[string]*Obj
 }
 
-func NewEvaluator(ast ast.Node, c *core.Core) (*Eval, error) {
+func NewEvaluator(ast ast.Node) (*Eval, error) {
 	e := &Eval{
 		AST:  ast,
-		Core: c,
 		next: make(chan bool),
-		work: make(chan *action.Eval),
+		work: make(chan *info.ActionEval),
 	}
 	return e, nil
 }
@@ -85,17 +84,12 @@ func (e *Eval) Continue() {
 }
 
 // NextAction asks eval to return the next action. Return nil, nil if no more action
-func (e *Eval) NextAction() (*action.Eval, error) {
+func (e *Eval) NextAction() (*info.ActionEval, error) {
 	next, ok := <-e.work
 	if !ok {
 		return nil, nil
 	}
 	return next, nil
-}
-
-func (e *Eval) Start() {
-	// TODO: consider catching panic here
-	e.Run()
 }
 
 func (e *Eval) Err() error {
@@ -106,14 +100,14 @@ func (e *Eval) Err() error {
 // via NextAction()
 // TODO: remove defer in favour of every function actually returning error
 //
-//nolint:nonamedreturns // not possible to perform the res, err modification without named return
-func (e *Eval) Run() (res Obj, err error) {
+//nolint:nonamedreturns,nakedret // not possible to perform the res, err modification without named return
+func (e *Eval) Run(c core.Core) (res Obj, err error) {
 	defer func() {
 		// this defer ensures that e.err is set correctly; this has to be the first defer
 		// as defers are called last in first out so this needs to be before any panic handling
 		e.err = err
 	}()
-	// TODO: this should hopefully be removed in the future
+	//TODO: this should hopefully be removed in the future
 	defer func() {
 		// recover from panic if one occured. Set err to nil otherwise.
 		if pErr := recover(); pErr != nil {
@@ -133,19 +127,20 @@ func (e *Eval) Run() (res Obj, err error) {
 	}()
 
 	global := NewEnv(nil)
+	e.Core = c
 	e.initSysFuncs(global)
 
 	// start running once we get the signal to go
 	err = e.waitForNext()
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	// this should run until it hits an Action
 	// it will then pass the action on a resp channel
 	// it will then wait for Next before running again
 	res, err = e.evalNode(e.AST, global)
-	return res, err
+	return
 }
 
 func (e *Eval) waitForNext() error {
@@ -156,7 +151,7 @@ func (e *Eval) waitForNext() error {
 	return nil
 }
 
-func (e *Eval) sendWork(w *action.Eval) {
+func (e *Eval) sendWork(w *info.ActionEval) {
 	e.work <- w
 }
 

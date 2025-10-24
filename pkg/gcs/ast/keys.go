@@ -1,8 +1,8 @@
 package ast
 
 import (
-	"github.com/genshinsim/gcsim/pkg/core/action"
 	"github.com/genshinsim/gcsim/pkg/core/attributes"
+	"github.com/genshinsim/gcsim/pkg/core/info"
 )
 
 var key = map[string]TokenType{
@@ -51,18 +51,18 @@ var key = map[string]TokenType{
 	// target related
 }
 
-var StatKeys = map[string]attributes.Stat{
-	"def%":     attributes.DEFP,
+var StatKeys = map[string]attributes.Prop{
+	"def%":     attributes.DEFPercent,
 	"def":      attributes.DEF,
 	"hp":       attributes.HP,
-	"hp%":      attributes.HPP,
+	"hp%":      attributes.HPPercent,
 	"atk":      attributes.ATK,
-	"atk%":     attributes.ATKP,
+	"atk%":     attributes.ATKPercent,
 	"er":       attributes.ER,
 	"em":       attributes.EM,
 	"cr":       attributes.CR,
 	"cd":       attributes.CD,
-	"heal":     attributes.Heal,
+	"heal":     attributes.HealBonus,
 	"pyro%":    attributes.PyroP,
 	"hydro%":   attributes.HydroP,
 	"cryo%":    attributes.CryoP,
@@ -76,29 +76,29 @@ var StatKeys = map[string]attributes.Stat{
 	"dmg%":    attributes.DmgP,
 }
 
-var EleKeys = map[string]attributes.Element{
-	"electro":  attributes.Electro,
-	"pyro":     attributes.Pyro,
-	"cryo":     attributes.Cryo,
-	"hydro":    attributes.Hydro,
-	"frozen":   attributes.Frozen,
-	"anemo":    attributes.Anemo,
-	"dendro":   attributes.Dendro,
-	"geo":      attributes.Geo,
-	"physical": attributes.Physical,
-	"none":     attributes.NoElement,
+var EleKeys = map[string]attributes.ElementType{
+	"electro":  attributes.ElementElectric,
+	"pyro":     attributes.ElementFire,
+	"cryo":     attributes.ElementIce,
+	"hydro":    attributes.ElementWater,
+	"frozen":   attributes.ElementFrozen,
+	"anemo":    attributes.ElementWind,
+	"dendro":   attributes.ElementGrass,
+	"geo":      attributes.ElementRock,
+	"physical": attributes.ElementNone, // TODO: is there physical element?
+	"none":     attributes.ElementNone,
 }
 
-var actionKeys = map[string]action.Action{
-	"skill":       action.ActionSkill,
-	"burst":       action.ActionBurst,
-	"attack":      action.ActionAttack,
-	"charge":      action.ActionCharge,
-	"high_plunge": action.ActionHighPlunge,
-	"low_plunge":  action.ActionLowPlunge,
-	"aim":         action.ActionAim,
-	"dash":        action.ActionDash,
-	"jump":        action.ActionJump,
-	"walk":        action.ActionWalk,
-	"swap":        action.ActionSwap,
+var actionKeys = map[string]info.Action{
+	"skill":       info.ActionSkill,
+	"burst":       info.ActionBurst,
+	"attack":      info.ActionAttack,
+	"charge":      info.ActionCharge,
+	"high_plunge": info.ActionHighPlunge,
+	"low_plunge":  info.ActionLowPlunge,
+	"aim":         info.ActionAim,
+	"dash":        info.ActionDash,
+	"jump":        info.ActionJump,
+	"walk":        info.ActionWalk,
+	"swap":        info.ActionSwap,
 }

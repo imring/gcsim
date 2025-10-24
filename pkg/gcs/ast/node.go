@@ -68,7 +68,7 @@ type (
 	// IfStmt represents an if block
 	IfStmt struct {
 		Pos
-		Condition Expr       // TODO: this should be an expr?
+		Condition Expr       //TODO: this should be an expr?
 		IfBlock   *BlockStmt // What to execute if true
 		ElseBlock Stmt       // What to execute if false
 	}
@@ -99,7 +99,7 @@ type (
 	// WhileStmt represents a while block
 	WhileStmt struct {
 		Pos
-		Condition  Expr       // TODO: this should be an expr?
+		Condition  Expr       //TODO: this should be an expr?
 		WhileBlock *BlockStmt // What to execute if true
 	}
 
@@ -139,7 +139,6 @@ func (*ForStmt) stmtNode()    {}
 func NewBlockStmt(pos Pos) *BlockStmt {
 	return &BlockStmt{Pos: pos}
 }
-
 func (b *BlockStmt) Append(n Node) {
 	b.List = append(b.List, n)
 }
@@ -375,16 +374,20 @@ func (s *SwitchStmt) String() string {
 }
 
 func (s *SwitchStmt) writeTo(sb *strings.Builder) {
-	sb.WriteString("switch ")
-	s.Condition.writeTo(sb)
+	sb.WriteString("switch")
+	if s.Condition != nil {
+		sb.WriteByte(' ')
+		s.Condition.writeTo(sb)
+	}
 	sb.WriteString(" {\n")
 	for _, v := range s.Cases {
 		v.writeTo(sb)
+		sb.WriteByte('\n')
 	}
 	if s.Default != nil {
 		sb.WriteString("default: {\n")
 		s.Default.writeTo(sb)
-		sb.WriteString("}")
+		sb.WriteString("}\n")
 	}
 	sb.WriteString("}")
 }
@@ -426,7 +429,7 @@ func (c *CaseStmt) String() string {
 func (c *CaseStmt) writeTo(sb *strings.Builder) {
 	sb.WriteString("case ")
 	c.Condition.writeTo(sb)
-	sb.WriteString(" {\n")
+	sb.WriteString(": {\n")
 	c.Body.writeTo(sb)
 	sb.WriteString("}")
 }
@@ -855,6 +858,7 @@ func (i *Field) String() string {
 
 func (i *Field) writeTo(sb *strings.Builder) {
 	for _, v := range i.Value {
+		sb.WriteByte('.')
 		sb.WriteString(v)
 	}
 }

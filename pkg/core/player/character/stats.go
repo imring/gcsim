@@ -1,172 +1,95 @@
 package character
 
 import (
-	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/genshinsim/gcsim/pkg/core/attributes"
+	"github.com/genshinsim/gcsim/pkg/core/glog"
+	"github.com/genshinsim/gcsim/pkg/core/info"
 )
 
-func (c *CharWrapper) Stats() ([attributes.EndStatType]float64, []any) {
+func (c *Character) Stats() attributes.Stats {
+	return attributes.NewStats(c.BaseProps, c.Modifiers.Stats())
+}
+
+func (c *Character) Stat(attr attributes.Prop) float64 {
+	// TODO: optimize with caching and OnPropChange event?
+	return c.Stats().Props[attr]
+}
+
+func (c *Character) Snapshot(attackInfo *info.Attack) info.Snapshot {
 	var sb strings.Builder
-	var debugDetails []any
+	var debug []any
+	var evt glog.Event
 
-	// grab char stats
-
-	var stats [attributes.EndStatType]float64
-	copy(stats[:], c.BaseStats[:attributes.EndStatType])
-
-	if c.debug {
-		debugDetails = make([]any, 0, 2*len(c.mods))
+	if attackInfo != nil {
+		evt = c.core.Log().NewEvent(attackInfo.Abil, glog.LogSnapshotEvent, c.Index).
+			Write("abil", attackInfo.Abil).
+			Write("mult", attackInfo.Mult).
+			Write("ele", attackInfo.Element.String()).
+			Write("durability", float64(attackInfo.Durability)).
+			Write("icd_tag", attackInfo.ICDTag).
+			Write("icd_group", attackInfo.ICDGroup)
 	}
 
-	n := 0
-	for _, v := range c.mods {
-		m, ok := v.(*StatMod)
-		if !ok {
-			c.mods[n] = v
-			n++
-			continue
-		}
-		if m.Expiry() <= *c.f && m.Expiry() != -1 {
-			continue
-		}
-
-		amt, ok := m.Amount()
-		if ok {
-			for k, v := range amt {
-				stats[k] += v
-			}
-		}
-		c.mods[n] = m
-		n++
-
-		if !c.debug {
-			continue
-		}
-		modStatus := make([]string, 0)
-
-		if ok {
-			sb.WriteString(m.Key())
-			modStatus = append(
-				modStatus,
-				"status: added",
-				"expiry_frame: "+strconv.Itoa(m.Expiry()),
-			)
-			modStatus = append(
-				modStatus,
-				attributes.PrettyPrintStatsSlice(amt)...,
-			)
-			debugDetails = append(debugDetails, sb.String(), modStatus)
-			sb.Reset()
-		} else {
-			sb.WriteString(m.Key())
-			modStatus = append(
-				modStatus,
-				"status: rejected",
-				"reason: conditions not met",
-			)
-			debugDetails = append(debugDetails, sb.String(), modStatus)
-			sb.Reset()
-		}
-	}
-	c.mods = c.mods[:n]
-
-	return stats, debugDetails
-}
-
-func (c *CharWrapper) Stat(s attributes.Stat) float64 {
-	val := c.BaseStats[s]
-	for _, v := range c.mods {
-		m, ok := v.(*StatMod)
-		if !ok {
-			continue
-		}
-		// ignore this mod if stat type doesnt match
-		if m.AffectedStat != attributes.NoStat && m.AffectedStat != s {
-			continue
-		}
-		// check expiry
-		if m.Expiry() > *c.f || m.Expiry() == -1 {
-			if amt, ok := m.Amount(); ok {
-				val += amt[s]
-			}
-		}
+	// snapshot the stats
+	s := info.Snapshot{
+		Stats:       c.Stats(),
+		Level:       c.Base.Level,
+		SourceFrame: c.core.F(),
 	}
 
-	return val
-}
+	// TODO: infusion
 
-func (c *CharWrapper) NonExtraStat(s attributes.Stat) float64 {
-	val := c.BaseStats[s]
-	for _, v := range c.mods {
-		m, ok := v.(*StatMod)
-		if !ok {
-			continue
-		}
-		// ignore this mod if stat type doesnt match
-		if m.AffectedStat != attributes.NoStat && m.AffectedStat != s {
-			continue
-		}
-		// is extra stat
-		if m.Extra {
-			continue
-		}
-		// check expiry
-		if m.Expiry() > *c.f || m.Expiry() == -1 {
-			if amt, ok := m.Amount(); ok {
-				val += amt[s]
-			}
-		}
+	// logs
+	for _, v := range s.Stats.ModifierChanges {
+		sb.WriteString(v.Reason)
+		modStatus := make([]string, 0, 2)
+		modStatus = append(modStatus,
+			"status: added",
+			"expiry_frame: "+strconv.Itoa(v.Expiry),
+		)
+		modStatus = append(
+			modStatus,
+			attributes.PrettyPrintStatsSlice(v.Props[:])...,
+		)
+		debug = append(debug, sb.String(), modStatus)
+		sb.Reset()
 	}
 
-	return val
-}
-
-func (c *CharWrapper) SelectStat(nonExtra bool, stat ...attributes.Stat) attributes.Stats {
-	var stats attributes.Stats
-	for _, k := range stat {
-		stats[k] += c.BaseStats[k]
+	if attackInfo != nil {
+		evt.WriteBuildMsg(debug...)
+		evt.Write("final_stats", attributes.PrettyPrintStatsSlice(s.Stats.Props[:]))
+		// if inf != attributes.ElementNone {
+		// 	evt.Write("infused_ele", inf.String())
+		// }
 	}
+	s.Logs = debug
 
-	for _, v := range c.mods {
-		m, ok := v.(*StatMod)
-		if !ok {
-			continue
-		}
-		// ignore this mod if stat type doesnt match
-		if m.AffectedStat != attributes.NoStat && !slices.Contains(stat, m.AffectedStat) {
-			continue
-		}
-		// skip if extra stat
-		if nonExtra && m.Extra {
-			continue
-		}
-		// check expiry
-		if m.Expiry() > *c.f || m.Expiry() == -1 {
-			if amt, ok := m.Amount(); ok {
-				for _, k := range stat {
-					stats[k] += amt[k]
-				}
-			}
-		}
-	}
-
-	return stats
+	return s
 }
 
-func (c *CharWrapper) MaxHP() float64 {
-	stats := c.SelectStat(false, attributes.BaseHP, attributes.HPP, attributes.HP)
-	return stats.MaxHP()
+func (c *Character) StatusDuration(status string) int {
+	return c.Modifiers.GetDuration(status)
 }
 
-func (c *CharWrapper) TotalAtk() float64 {
-	stats := c.SelectStat(false, attributes.BaseATK, attributes.ATKP, attributes.ATK)
-	return stats.TotalATK()
+func (c *Character) StatusIsActive(status string) bool {
+	return c.Modifiers.HasModifier(status)
 }
 
-func (c *CharWrapper) TotalDef(nonExtra bool) float64 {
-	stats := c.SelectStat(nonExtra, attributes.BaseDEF, attributes.DEFP, attributes.DEF)
-	return stats.TotalDEF()
+func (c *Character) Tag(tag string) int {
+	return c.Tags.Get(tag)
+}
+
+func (c *Character) SetTag(tag string, val int) {
+	c.Tags.Set(tag, val)
+}
+
+func (c *Character) AddModifier(m info.Modifier) {
+	c.Modifiers.Add(m)
+}
+
+func (c *Character) RemoveModifier(key string) bool {
+	return c.Modifiers.Remove(key)
 }

@@ -30,14 +30,14 @@ type EnergySettings struct {
 }
 
 type HurtSettings struct {
-	Active   bool               `json:"active"`
-	Once     bool               `json:"once"`
-	Start    int                `json:"start"`
-	End      int                `json:"end"`
-	Min      float64            `json:"min"`
-	Max      float64            `json:"max"`
-	Element  attributes.Element `json:"element"`
-	LastHurt int                `json:"last_hurt"`
+	Active   bool                   `json:"active"`
+	Once     bool                   `json:"once"`
+	Start    int                    `json:"start"`
+	End      int                    `json:"end"`
+	Min      float64                `json:"min"`
+	Max      float64                `json:"max"`
+	Element  attributes.ElementType `json:"element"`
+	LastHurt int                    `json:"last_hurt"`
 }
 
 type SimulatorSettings struct {

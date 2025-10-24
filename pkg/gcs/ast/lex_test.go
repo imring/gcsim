@@ -13,7 +13,6 @@ func TestFields(t *testing.T) {
 		fmt.Println(n)
 	}
 }
-
 func TestBasicToken(t *testing.T) {
 	input := `
 	let y = fn(x) {

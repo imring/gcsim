@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/genshinsim/gcsim/pkg/conditional"
+	"github.com/genshinsim/gcsim/pkg/core/conditional"
 	"github.com/genshinsim/gcsim/pkg/gcs/ast"
 	"github.com/genshinsim/gcsim/pkg/gcs/constant"
 )
@@ -59,7 +59,7 @@ func (e *Eval) evalFuncExpr(n *ast.FuncExpr, env *Env) Obj {
 }
 
 func (e *Eval) evalIdent(n *ast.Ident, env *Env) (Obj, error) {
-	// TODO: this should be a variable
+	//TODO: this should be a variable
 	res, err := env.v(n.Value)
 	if err != nil {
 		return nil, err

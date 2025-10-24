@@ -12,10 +12,10 @@ type Config struct {
 }
 
 type Collector interface {
-	Flush(core *core.Core, result *Result)
+	Flush(core core.Core, result *Result)
 }
 
-type NewStatsFunc func(core *core.Core) (Collector, error)
+type NewStatsFunc func(core core.Core) (Collector, error)
 
 var (
 	mu         sync.Mutex

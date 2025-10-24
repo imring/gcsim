@@ -1,9 +1,5 @@
 package info
 
-type TargetKey int
-
-const InvalidTargetKey TargetKey = -1
-
 type TargettableType int
 
 const (
@@ -12,3 +8,9 @@ const (
 	TargettableGadget
 	TargettableTypeCount
 )
+
+type Coord struct {
+	X float64 `json:"x"`
+	Y float64 `json:"y"`
+	R float64 `json:"r"`
+}

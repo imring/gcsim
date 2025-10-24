@@ -22,30 +22,30 @@ type CharacterProfile struct {
 
 type RandomSubstats struct {
 	Rarity  int `json:"rarity"`
-	Sand    attributes.Stat
-	Goblet  attributes.Stat
-	Circlet attributes.Stat
+	Sand    attributes.Prop
+	Goblet  attributes.Prop
+	Circlet attributes.Prop
 }
 
 func (r RandomSubstats) Validate() error {
-	// TODO: support more than just 5 stars
+	//TODO: support more than just 5 stars
 	if r.Rarity != 5 {
 		return fmt.Errorf("unsupported rarity: %v", r.Rarity)
 	}
-	if r.Sand == attributes.NoStat {
+	if r.Sand == attributes.NoProp {
 		return errors.New("sand main stat not specified")
 	}
-	if r.Goblet == attributes.NoStat {
+	if r.Goblet == attributes.NoProp {
 		return errors.New("goblet main stat not specified")
 	}
-	if r.Circlet == attributes.NoStat {
+	if r.Circlet == attributes.NoProp {
 		return errors.New("circlet main stat not specified")
 	}
 	// main stat have to be valid
 	switch r.Sand {
-	case attributes.HPP:
-	case attributes.ATKP:
-	case attributes.DEFP:
+	case attributes.HPPercent:
+	case attributes.ATKPercent:
+	case attributes.DEFPercent:
 	case attributes.EM:
 	case attributes.ER:
 	default:
@@ -53,9 +53,9 @@ func (r RandomSubstats) Validate() error {
 	}
 
 	switch r.Goblet {
-	case attributes.HPP:
-	case attributes.ATKP:
-	case attributes.DEFP:
+	case attributes.HPPercent:
+	case attributes.ATKPercent:
+	case attributes.DEFPercent:
 	case attributes.EM:
 	case attributes.PyroP:
 	case attributes.HydroP:
@@ -70,13 +70,13 @@ func (r RandomSubstats) Validate() error {
 	}
 
 	switch r.Circlet {
-	case attributes.HPP:
-	case attributes.ATKP:
-	case attributes.DEFP:
+	case attributes.HPPercent:
+	case attributes.ATKPercent:
+	case attributes.DEFPercent:
 	case attributes.EM:
 	case attributes.CR:
 	case attributes.CD:
-	case attributes.Heal:
+	case attributes.HealBonus:
 	default:
 		return fmt.Errorf("%v is not a valid main stat for sand", r.Sand.String())
 	}
@@ -101,13 +101,13 @@ func (c *CharacterProfile) Clone() CharacterProfile {
 }
 
 type CharacterBase struct {
-	Key       keys.Char          `json:"key"`
-	Rarity    int                `json:"rarity"`
-	Element   attributes.Element `json:"element"`
-	Level     int                `json:"level"`
-	MaxLevel  int                `json:"max_level"`
-	Ascension int                `json:"ascension"`
-	Cons      int                `json:"cons"`
+	Key       keys.Char              `json:"key"`
+	Rarity    int                    `json:"rarity"`
+	Element   attributes.ElementType `json:"element"`
+	Level     int                    `json:"level"`
+	MaxLevel  int                    `json:"max_level"`
+	Ascension int                    `json:"ascension"`
+	Cons      int                    `json:"cons"`
 }
 
 type BodyType int

@@ -1,39 +1,41 @@
 package construct
 
 import (
+	"github.com/genshinsim/gcsim/pkg/core"
 	"github.com/genshinsim/gcsim/pkg/core/event"
 	"github.com/genshinsim/gcsim/pkg/core/glog"
+	"github.com/genshinsim/gcsim/pkg/core/info"
 )
 
 const destroyedMsg = "construct destroyed: "
 
 type Handler struct {
-	constructs  []Construct
-	consNoLimit []Construct
+	constructs  []core.Construct
+	consNoLimit []core.Construct
 	log         glog.Logger
 	f           *int
-	evt         event.Eventter
+	evt         *event.System
 }
 
-func New(f *int, log glog.Logger, evt event.Eventter) *Handler {
+func New(f *int, log glog.Logger, evt *event.System) *Handler {
 	return &Handler{
-		constructs:  make([]Construct, 0, 3),
-		consNoLimit: make([]Construct, 0, 3),
+		constructs:  make([]core.Construct, 0, 3),
+		consNoLimit: make([]core.Construct, 0, 3),
 		f:           f,
 		log:         log,
 		evt:         evt,
 	}
 }
 
-func (h *Handler) New(c Construct, refresh bool) {
+func (h *Handler) New(c core.Construct, refresh bool) {
 	h.NewConstruct(c, refresh, &h.constructs, true)
 }
 
-func (h *Handler) NewNoLimitCons(c Construct, refresh bool) {
+func (h *Handler) NewNoLimitCons(c core.Construct, refresh bool) {
 	h.NewConstruct(c, refresh, &h.consNoLimit, false)
 }
 
-func (h *Handler) NewConstruct(c Construct, refresh bool, constructs *[]Construct, hasLimit bool) {
+func (h *Handler) NewConstruct(c core.Construct, refresh bool, constructs *[]core.Construct, hasLimit bool) {
 	// if refresh, we nil out the old one if any
 	ind := -1
 	if refresh {
@@ -72,12 +74,14 @@ func (h *Handler) NewConstruct(c Construct, refresh bool, constructs *[]Construc
 		}
 	}
 
-	h.evt.Emit(event.OnConstructSpawned)
+	h.evt.ConstructSpawned.Emit(event.ConstructSpawnedEvent{
+		Index: c.Key(),
+	})
 
 	h.cleanOutNils(constructs)
 }
 
-func (h *Handler) cleanOutNils(constructs *[]Construct) {
+func (h *Handler) cleanOutNils(constructs *[]core.Construct) {
 	// clean out any nils
 	n := 0
 	for _, x := range *constructs {
@@ -119,9 +123,9 @@ func (h *Handler) Tick() {
 	h.consNoLimit = h.consNoLimit[:n]
 }
 
-func (h *Handler) ConstructsByType(t GeoConstructType) ([]Construct, []Construct) {
-	var match []Construct
-	var notMatch []Construct
+func (h *Handler) ConstructsByType(t info.GeoConstructType) ([]core.Construct, []core.Construct) {
+	var match []core.Construct
+	var notMatch []core.Construct
 	for _, v := range h.constructs {
 		if v.Type() == t {
 			match = append(match, v)
@@ -151,7 +155,7 @@ func (h *Handler) Count() int {
 	return count
 }
 
-func (h *Handler) CountByType(t GeoConstructType) int {
+func (h *Handler) CountByType(t info.GeoConstructType) int {
 	count := 0
 	for _, v := range h.constructs {
 		if v.Type() == t {
@@ -180,7 +184,7 @@ func (h *Handler) Has(key int) bool {
 	return false
 }
 
-func (h *Handler) Expiry(t GeoConstructType) int {
+func (h *Handler) Expiry(t info.GeoConstructType) int {
 	expiry := -1
 	for _, v := range h.constructs {
 		if v.Type() == t {

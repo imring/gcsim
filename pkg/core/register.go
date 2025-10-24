@@ -5,21 +5,18 @@ import (
 
 	"github.com/genshinsim/gcsim/pkg/core/info"
 	"github.com/genshinsim/gcsim/pkg/core/keys"
-	"github.com/genshinsim/gcsim/pkg/core/player/character"
 )
 
 var (
-	mu             sync.RWMutex
-	NewCharFuncMap = make(map[keys.Char]NewCharacterFunc)
-	setMap         = make(map[keys.Set]NewSetFunc)
-	weaponMap      = make(map[keys.Weapon]NewWeaponFunc)
+	mu               sync.RWMutex
+	NewCharFuncMap   = make(map[keys.Char]NewCharacterFunc)
+	NewSetFuncMap    = make(map[keys.Set]NewSetFunc)
+	NewWeaponFuncMap = make(map[keys.Weapon]NewWeaponFunc)
 )
 
-type (
-	NewCharacterFunc func(core *Core, char *character.CharWrapper, p info.CharacterProfile) error
-	NewSetFunc       func(core *Core, char *character.CharWrapper, count int, param map[string]int) (info.Set, error)
-	NewWeaponFunc    func(core *Core, char *character.CharWrapper, p info.WeaponProfile) (info.Weapon, error)
-)
+type NewCharacterFunc func(core Core, p info.CharacterProfile) (Character, error)
+type NewSetFunc func(core Core, char Character, count int, param map[string]int) (Set, error)
+type NewWeaponFunc func(core Core, char Character, p info.WeaponProfile) (Weapon, error)
 
 func RegisterCharFunc(char keys.Char, f NewCharacterFunc) {
 	mu.Lock()
@@ -33,17 +30,17 @@ func RegisterCharFunc(char keys.Char, f NewCharacterFunc) {
 func RegisterSetFunc(set keys.Set, f NewSetFunc) {
 	mu.Lock()
 	defer mu.Unlock()
-	if _, dup := setMap[set]; dup {
+	if _, dup := NewSetFuncMap[set]; dup {
 		panic("combat: RegisterSetBonus called twice for character " + set.String())
 	}
-	setMap[set] = f
+	NewSetFuncMap[set] = f
 }
 
 func RegisterWeaponFunc(weap keys.Weapon, f NewWeaponFunc) {
 	mu.Lock()
 	defer mu.Unlock()
-	if _, dup := weaponMap[weap]; dup {
+	if _, dup := NewWeaponFuncMap[weap]; dup {
 		panic("combat: RegisterWeapon called twice for character " + weap.String())
 	}
-	weaponMap[weap] = f
+	NewWeaponFuncMap[weap] = f
 }

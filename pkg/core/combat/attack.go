@@ -3,84 +3,143 @@ package combat
 import (
 	"fmt"
 
-	"github.com/genshinsim/gcsim/pkg/core/event"
+	"github.com/genshinsim/gcsim/pkg/core"
 	"github.com/genshinsim/gcsim/pkg/core/glog"
 	"github.com/genshinsim/gcsim/pkg/core/info"
 )
 
-// attack returns true if the attack lands
-func (h *Handler) attack(t info.Target, a *info.AttackEvent) (float64, bool) {
-	willHit, reason := t.AttackWillLand(a.Pattern)
+func (h *Handler) ApplyAttack(ae *info.AttackEvent) {
+	h.events.ApplyAttack.Emit(ae)
+
+	var landed bool
+
+	for _, v := range h.target.Targets() {
+		if v == nil {
+			continue
+		}
+		if ae.Pattern.SkipTargets[v.Type()] || !v.IsAlive() {
+			continue
+		}
+		_, land := h.attack(v, ae)
+		if land && v.Type() == info.TargettableEnemy {
+			landed = true
+		}
+	}
+
+	// add hitlag to actor but ignore if this is deployable
+	if h.hitlag && landed && !ae.Info.IsDeployable {
+		dur := ae.Info.HitlagHaltFrames
+		if h.defHalt && ae.Info.CanBeDefenseHalted {
+			dur += 0.06 * 60
+		}
+		if dur > 0 {
+			h.player.ApplyHitlag(ae.Info.ActorIndex, ae.Info.HitlagFactor, dur)
+			h.log.NewEvent(fmt.Sprintf("%v applying hitlag: %.3f", ae.Info.Abil, dur), glog.LogHitlagEvent, ae.Info.ActorIndex).
+				Write("duration", dur).
+				Write("factor", ae.Info.HitlagFactor)
+		}
+	}
+}
+
+func (h *Handler) QueueAttackWithSnap(snap info.Snapshot, qa info.QueueAttack) {
+	if qa.DmgDelay < 0 {
+		panic("dmgDelay cannot be less than 0")
+	}
+	ae := info.AttackEvent{
+		Info:        qa.Info,
+		Pattern:     qa.Pattern,
+		Attacker:    snap,
+		SourceFrame: *h.f,
+	}
+	// add callbacks only if not nil
+	for _, f := range qa.Callbacks {
+		if f != nil {
+			ae.Callbacks = append(ae.Callbacks, f)
+		}
+	}
+	h.queueDmg(&ae, qa.DmgDelay)
+}
+
+func (h *Handler) QueueAttackEvent(ae *info.AttackEvent, dmgDelay int) {
+	h.queueDmg(ae, dmgDelay)
+}
+
+func (h *Handler) QueueAttack(qa info.QueueAttack) {
+	// panic if dmgDelay < snapshotDelay; this should not happen. if it happens then there's something wrong with the
+	// character's code
+	if qa.DmgDelay < qa.SnapshotDelay {
+		panic("dmgDelay cannot be less than snapshotDelay")
+	}
+	if qa.DmgDelay < 0 {
+		panic("dmgDelay cannot be less than 0")
+	}
+	// create attackevent
+	ae := info.AttackEvent{
+		Info:        qa.Info,
+		Pattern:     qa.Pattern,
+		SourceFrame: *h.f,
+	}
+
+	// add callbacks only if not nil
+	for _, f := range qa.Callbacks {
+		if f != nil {
+			ae.Callbacks = append(ae.Callbacks, f)
+		}
+	}
+
+	switch {
+	case qa.SnapshotDelay < 0:
+		// snapshotDelay < 0 means we don't need a snapshot; optimization for reaction
+		// damage essentially
+		h.queueDmg(&ae, qa.DmgDelay)
+	case qa.SnapshotDelay == 0:
+		h.generateSnapshot(&ae)
+		h.queueDmg(&ae, qa.DmgDelay)
+	default:
+		// use add task ctrl to queue; no need to track here
+		h.task.Add(func() {
+			h.generateSnapshot(&ae)
+			h.queueDmg(&ae, qa.DmgDelay-qa.SnapshotDelay)
+		}, qa.SnapshotDelay)
+	}
+
+}
+
+// This code here should probably be handled in player not core
+// since it's a convenience function wrapped around queuedamage
+//
+// does it make sense for core to have any knowledge of teams? probably not??
+func (h *Handler) generateSnapshot(ae *info.AttackEvent) {
+	ae.Attacker = h.player.ByIndex(ae.Info.ActorIndex).Snapshot(&ae.Info)
+}
+
+func (h *Handler) queueDmg(ae *info.AttackEvent, delay int) {
+	if delay == 0 {
+		h.ApplyAttack(ae)
+		return
+	}
+	h.task.Add(func() {
+		h.ApplyAttack(ae)
+	}, delay)
+}
+
+func (h *Handler) attack(t core.Target, ae *info.AttackEvent) (float64, bool) {
+	willHit, _ := t.AttackWillLand(ae.Pattern)
 	if !willHit {
 		// Move target logs into the "Sim" event log to avoid cluttering main display for stuff like Guoba
 		// And obvious things like "Fischl A4 is single target so it didn't hit targets 2-4"
 		// TODO: Maybe want to add a separate set of log events for this?
-		if h.Debug && t.Type() != info.TargettablePlayer {
-			h.Log.NewEventBuildMsg(glog.LogDebugEvent, a.Info.ActorIndex, "skipped ", a.Info.Abil, " ", reason).
-				Write("attack_tag", a.Info.AttackTag).
-				Write("applied_ele", a.Info.Element).
-				Write("dur", a.Info.Durability).
-				Write("target", t.Key()).
-				Write("info.Shape", a.Pattern.Shape.String())
-		}
+		// if h.Debug && t.Type() != targets.TargettablePlayer {
+		// 	h.Log.NewEventBuildMsg(glog.LogDebugEvent, a.Info.ActorIndex, "skipped ", a.Info.Abil, " ", reason).
+		// 		Write("attack_tag", a.Info.AttackTag).
+		// 		Write("applied_ele", a.Info.Element).
+		// 		Write("dur", a.Info.Durability).
+		// 		Write("target", t.Key()).
+		// 		Write("geometry.Shape", a.Pattern.Shape.String())
+		// }
 		return 0, false
 	}
-	// make a copy first
-	cpy := *a
-	dmg := t.HandleAttack(&cpy)
-	return dmg, true
-}
 
-func (h *Handler) ApplyAttack(a *info.AttackEvent) float64 {
-	h.Events.Emit(event.OnApplyAttack, a)
-	// died := false
-	var total float64
-	var landed bool
-	// check player
-	if !a.Pattern.SkipTargets[info.TargettablePlayer] {
-		// TODO: we don't check for landed here since attack that hit player should never generate hitlag?
-		h.attack(h.player, a)
-	}
-	// check enemies
-	if !a.Pattern.SkipTargets[info.TargettableEnemy] {
-		for _, v := range h.enemies {
-			if v == nil {
-				continue
-			}
-			if !v.IsAlive() {
-				continue
-			}
-			a, l := h.attack(v, a)
-			total += a
-			if l {
-				landed = true
-			}
-		}
-	}
-	// check gadgets
-	if !a.Pattern.SkipTargets[info.TargettableGadget] {
-		for i := 0; i < len(h.gadgets); i++ {
-			// sanity check here; possible gadgets died and have not been cleaned up yet
-			if h.gadgets[i] == nil {
-				continue
-			}
-			h.attack(h.gadgets[i], a)
-		}
-	}
-	// add hitlag to actor but ignore if this is deployable
-	if h.EnableHitlag && landed && !a.Info.IsDeployable {
-		dur := a.Info.HitlagHaltFrames
-		if h.DefHalt && a.Info.CanBeDefenseHalted {
-			dur += 3.6 // 0.06
-		}
-		if dur > 0 {
-			h.Team.ApplyHitlag(a.Info.ActorIndex, a.Info.HitlagFactor, dur)
-			if h.Debug {
-				h.Log.NewEvent(fmt.Sprintf("%v applying hitlag: %.3f", a.Info.Abil, dur), glog.LogHitlagEvent, a.Info.ActorIndex).
-					Write("duration", dur).
-					Write("factor", a.Info.HitlagFactor)
-			}
-		}
-	}
-	return total
+	dmg := t.HandleAttack(ae)
+	return dmg, true
 }

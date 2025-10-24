@@ -3,7 +3,9 @@ package combat
 import (
 	"math"
 
+	"github.com/genshinsim/gcsim/pkg/core"
 	"github.com/genshinsim/gcsim/pkg/core/info"
+	"github.com/genshinsim/gcsim/pkg/core/keys"
 )
 
 var gadgetLimits []int
@@ -21,11 +23,11 @@ func init() {
 	gadgetLimits[info.GadgetTypCrystallizeShard] = 3
 }
 
-func (h *Handler) RemoveGadget(key info.TargetKey) {
+func (h *Handler) RemoveGadget(key keys.Target) {
 	h.ReplaceGadget(key, nil)
 }
 
-func (h *Handler) AddGadget(t info.Gadget) {
+func (h *Handler) AddGadget(t core.Gadget) {
 	// check for hard coded limit
 	if gadgetLimits[t.GadgetTyp()] > 0 {
 		// should kill oldest one if > limit
@@ -43,14 +45,15 @@ func (h *Handler) AddGadget(t info.Gadget) {
 			}
 		}
 		if count == gadgetLimits[t.GadgetTyp()] {
-			h.gadgets[oldest].Kill()
+			h.gadgets[oldest].Kill(nil)
 		}
 	}
+
 	h.gadgets = append(h.gadgets, t)
-	t.SetKey(h.nextkey())
+	h.target.Add(t)
 }
 
-func (h *Handler) ReplaceGadget(key info.TargetKey, t info.Gadget) {
+func (h *Handler) ReplaceGadget(key keys.Target, t core.Gadget) {
 	// do nothing if not found
 	for i, v := range h.gadgets {
 		if v != nil && v.Key() == key {
@@ -59,11 +62,11 @@ func (h *Handler) ReplaceGadget(key info.TargetKey, t info.Gadget) {
 	}
 }
 
-func (h *Handler) Gadget(i int) info.Gadget {
+func (h *Handler) Gadget(i int) core.Gadget {
 	return h.gadgets[i]
 }
 
-func (h *Handler) Gadgets() []info.Gadget {
+func (h *Handler) GetGadgets() []core.Gadget {
 	return h.gadgets
 }
 

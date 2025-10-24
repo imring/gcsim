@@ -1,98 +1,91 @@
 package crimson
 
 import (
-	"fmt"
-
 	"github.com/genshinsim/gcsim/pkg/core"
-	"github.com/genshinsim/gcsim/pkg/core/attacks"
 	"github.com/genshinsim/gcsim/pkg/core/attributes"
 	"github.com/genshinsim/gcsim/pkg/core/event"
-	"github.com/genshinsim/gcsim/pkg/core/glog"
 	"github.com/genshinsim/gcsim/pkg/core/info"
 	"github.com/genshinsim/gcsim/pkg/core/keys"
-	"github.com/genshinsim/gcsim/pkg/core/player/character"
-	"github.com/genshinsim/gcsim/pkg/modifier"
+	"github.com/genshinsim/gcsim/pkg/core/modifier"
+)
+
+type Set struct {
+	Index int
+}
+
+func (s *Set) SetIndex(idx int) { s.Index = idx }
+func (s *Set) Init() error      { return nil }
+
+const (
+	cw2pc      = "crimson-2pc"
+	cw4pc      = "crimson-4pc"
+	cw4pcStack = "crimson-4pc-stack"
 )
 
 func init() {
 	core.RegisterSetFunc(keys.CrimsonWitchOfFlames, NewSet)
+
+	modifier.Register(cw2pc, modifier.Config{
+		ElementDurability: 100,
+	})
+
+	modifier.Register(cw4pc, modifier.Config{
+		ElementDurability: 100,
+	})
+
+	modifier.Register(cw4pcStack, modifier.Config{
+		Stacking:          modifier.MultipleAllRefresh,
+		MaxCount:          3,
+		Duration:          10 * 60,
+		ElementDurability: 100,
+		AffectedByHitlag:  true,
+	})
 }
 
-type Set struct {
-	stacks int
-	Index  int
-	Count  int
-}
-
-func (s *Set) SetIndex(idx int) { s.Index = idx }
-func (s *Set) GetCount() int    { return s.Count }
-func (s *Set) Init() error      { return nil }
-
-const cw4pc = "crimson-4pc-stacks"
-
-func NewSet(c *core.Core, char *character.CharWrapper, count int, param map[string]int) (info.Set, error) {
-	s := Set{Count: count}
-	s.stacks = 0
+func NewSet(c core.Core, char core.Character, count int, param map[string]int) (core.Set, error) {
+	s := Set{}
 
 	if count >= 2 {
-		m := make([]float64, attributes.EndStatType)
-		m[attributes.PyroP] = 0.15
-		char.AddStatMod(character.StatMod{
-			Base:         modifier.NewBase("crimson-2pc", -1),
-			AffectedStat: attributes.PyroP,
-			Amount: func() ([]float64, bool) {
-				return m, true
-			},
-		})
+		s.pc2(char)
 	}
-
 	if count >= 4 {
-		mStacks := make([]float64, attributes.EndStatType)
-		// post snap shot to increase stacks
-		c.Events.Subscribe(event.OnSkill, func(args ...any) bool {
-			if c.Player.Active() != char.Index() {
-				return false
-			}
-
-			// every exectuion, add 1 stack, to a max of 3, reset cd to 10 seconds
-			if !char.StatusIsActive(cw4pc) {
-				s.stacks = 0
-			}
-			if s.stacks < 3 {
-				s.stacks++
-			}
-
-			c.Log.NewEvent("crimson witch 4pc adding stack", glog.LogArtifactEvent, char.Index()).
-				Write("current stacks", s.stacks)
-
-			mStacks[attributes.PyroP] = 0.15 * 0.5 * float64(s.stacks)
-			char.AddStatMod(character.StatMod{
-				Base:         modifier.NewBaseWithHitlag(cw4pc, 10*60),
-				AffectedStat: attributes.PyroP,
-				Amount: func() ([]float64, bool) {
-					return mStacks, true
-				},
-			})
-
-			return false
-		}, fmt.Sprintf("%v-cw-4pc", char.Base.Key.String()))
-
-		char.AddReactBonusMod(character.ReactBonusMod{
-			Base: modifier.NewBase("crimson-4pc", -1),
-			Amount: func(ai info.AttackInfo) (float64, bool) {
-				switch ai.AttackTag {
-				case attacks.AttackTagOverloadDamage,
-					attacks.AttackTagBurningDamage,
-					attacks.AttackTagBurgeon:
-					return 0.4, false
-				}
-				if ai.Amped {
-					return 0.15, false
-				}
-				return 0, false
-			},
-		})
+		s.pc4(c, char)
 	}
 
 	return &s, nil
+}
+
+func (s *Set) pc2(char core.Character) {
+	char.AddModifier(info.Modifier{
+		Key: cw2pc,
+		Props: attributes.PropMap{
+			attributes.PyroP: 0.15,
+		},
+	})
+}
+
+func (s *Set) pc4(c core.Core, char core.Character) {
+	char.AddModifier(info.Modifier{
+		Key: cw4pc,
+		Props: attributes.PropMap{
+			attributes.OverloadBonus: 0.4,
+			attributes.BurningBonus:  0.4,
+			attributes.BurgeonBonus:  0.4,
+			attributes.VaporizeBonus: 0.15,
+			attributes.MeltBonus:     0.15,
+		},
+	})
+
+	c.Events().Skill.Subscribe(func(event event.ActionEvent) {
+		if event.CharIndex != char.GetIndex() {
+			return
+		}
+
+		char.AddModifier(info.Modifier{
+			Key: cw4pcStack,
+			Props: attributes.PropMap{
+				attributes.PyroP: 0.15 * 0.5,
+			},
+		})
+	})
 }

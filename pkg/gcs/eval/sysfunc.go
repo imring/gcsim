@@ -6,15 +6,14 @@ import (
 	"math"
 	"strings"
 
-	"github.com/genshinsim/gcsim/internal/template/crystallize"
-	"github.com/genshinsim/gcsim/pkg/core/action"
 	"github.com/genshinsim/gcsim/pkg/core/attributes"
-	"github.com/genshinsim/gcsim/pkg/core/event"
 	"github.com/genshinsim/gcsim/pkg/core/glog"
 	"github.com/genshinsim/gcsim/pkg/core/info"
 	"github.com/genshinsim/gcsim/pkg/core/keys"
+	"github.com/genshinsim/gcsim/pkg/core/reactable"
+	"github.com/genshinsim/gcsim/pkg/core/shortcut"
 	"github.com/genshinsim/gcsim/pkg/gcs/ast"
-	"github.com/genshinsim/gcsim/pkg/shortcut"
+	"github.com/genshinsim/gcsim/pkg/geometry"
 )
 
 func (e *Eval) initSysFuncs(env *Env) {
@@ -69,7 +68,7 @@ func (e *Eval) print(c *ast.CallExpr, env *Env) (Obj, error) {
 		sb.WriteString(val.Inspect())
 	}
 	if e.Core != nil {
-		e.Core.Log.NewEvent(sb.String(), glog.LogUserEvent, -1)
+		e.Core.Log().NewEvent(sb.String(), glog.LogUserEvent, -1)
 	} else {
 		fmt.Println(sb.String())
 	}
@@ -78,12 +77,12 @@ func (e *Eval) print(c *ast.CallExpr, env *Env) (Obj, error) {
 
 func (e *Eval) f(c *ast.CallExpr, env *Env) (Obj, error) {
 	return &number{
-		ival: int64(e.Core.F),
+		ival: int64(e.Core.F()),
 	}, nil
 }
 
 func (e *Eval) rand(c *ast.CallExpr, env *Env) (Obj, error) {
-	x := e.Core.Rand.Float64()
+	x := e.Core.Rand().Float64()
 	return &number{
 		fval:    x,
 		isFloat: true,
@@ -91,7 +90,7 @@ func (e *Eval) rand(c *ast.CallExpr, env *Env) (Obj, error) {
 }
 
 func (e *Eval) randnorm(c *ast.CallExpr, env *Env) (Obj, error) {
-	x := e.Core.Rand.NormFloat64()
+	x := e.Core.Rand().NormFloat64()
 	return &number{
 		fval:    x,
 		isFloat: true,
@@ -111,8 +110,8 @@ func (e *Eval) wait(c *ast.CallExpr, env *Env) (Obj, error) {
 		return &null{}, nil
 	}
 
-	e.sendWork(&action.Eval{
-		Action: action.ActionWait,
+	e.sendWork(&info.ActionEval{
+		Action: info.ActionWait,
 		Param:  map[string]int{"f": int(f)},
 	})
 	// block until sim is done with the action; unless we're done
@@ -137,8 +136,8 @@ func (e *Eval) delay(c *ast.CallExpr, env *Env) (Obj, error) {
 		return &null{}, nil
 	}
 
-	e.sendWork(&action.Eval{
-		Action: action.ActionDelay,
+	e.sendWork(&info.ActionEval{
+		Action: info.ActionDelay,
 		Param:  map[string]int{"f": int(f)},
 	})
 	// block until sim is done with the action; unless we're done
@@ -173,8 +172,8 @@ func (e *Eval) setPlayerPos(c *ast.CallExpr, env *Env) (Obj, error) {
 	x := ntof(objs[0].(*number))
 	y := ntof(objs[1].(*number))
 
-	e.Core.Combat.SetPlayerPos(info.Point{X: x, Y: y})
-	e.Core.Combat.Player().SetDirectionToClosestEnemy()
+	e.Core.SetPlayerPos(geometry.Point{X: x, Y: y})
+	e.Core.SetPlayerDirectionToClosestEnemy()
 
 	return bton(true), nil
 }
@@ -193,12 +192,11 @@ func (e *Eval) setParticleDelay(c *ast.CallExpr, env *Env) (Obj, error) {
 	if !ok {
 		return nil, fmt.Errorf("set_particle_delay first argument %v is not a valid character", name.str)
 	}
-	char, ok := e.Core.Player.ByKey(ck)
-	if !ok {
+	char := e.Core.GetCharacterByKey(ck)
+	if char == nil {
 		return nil, fmt.Errorf("set_particle_delay: %v is not on this team", name.str)
 	}
-
-	char.ParticleDelay = int(delay)
+	char.SetParticleDelay(int(delay))
 
 	return &null{}, nil
 }
@@ -216,7 +214,7 @@ func (e *Eval) setSwapICD(c *ast.CallExpr, env *Env) (Obj, error) {
 		return nil, fmt.Errorf("invald value for set_swap_icd, expected non-negative integer, got %v", f)
 	}
 
-	e.Core.Player.SetSwapICD(int(f))
+	e.Core.SetPlayerSwapICD(int(f))
 	return &null{}, nil
 }
 
@@ -229,12 +227,13 @@ func (e *Eval) setDefaultTarget(c *ast.CallExpr, env *Env) (Obj, error) {
 	idx := int(ntoi(objs[0].(*number)))
 
 	// check if index is in range
-	if idx < 1 || idx > e.Core.Combat.EnemyCount() {
-		return nil, fmt.Errorf("index for set_default_target is invalid, should be between %v and %v, got %v", 1, e.Core.Combat.EnemyCount(), idx)
+	enemies := e.Core.GetEnemies()
+	if idx < 1 || idx > len(enemies) {
+		return nil, fmt.Errorf("index for set_default_target is invalid, should be between %v and %v, got %v", 1, len(enemies), idx)
 	}
 
-	e.Core.Combat.DefaultTarget = e.Core.Combat.Enemy(idx - 1).Key()
-	e.Core.Combat.Player().SetDirectionToClosestEnemy()
+	e.Core.SetDefaultTarget(enemies[idx-1].Key())
+	e.Core.SetPlayerDirectionToClosestEnemy()
 
 	return &null{}, nil
 }
@@ -250,19 +249,20 @@ func (e *Eval) setTargetPos(c *ast.CallExpr, env *Env) (Obj, error) {
 	y := ntof(objs[2].(*number))
 
 	// check if index is in range
-	if idx < 1 || idx > e.Core.Combat.EnemyCount() {
-		return nil, fmt.Errorf("index for set_default_target is invalid, should be between %v and %v, got %v", 1, e.Core.Combat.EnemyCount(), idx)
+	enemies := e.Core.GetEnemies()
+	if idx < 1 || idx > len(enemies) {
+		return nil, fmt.Errorf("index for set_default_target is invalid, should be between %v and %v, got %v", 1, len(enemies), idx)
 	}
 
-	e.Core.Combat.SetEnemyPos(idx-1, info.Point{X: x, Y: y})
-	e.Core.Combat.Player().SetDirectionToClosestEnemy()
+	e.Core.SetEnemyPos(idx-1, geometry.Point{X: x, Y: y})
+	e.Core.SetPlayerDirectionToClosestEnemy()
 
 	return &null{}, nil
 }
 
 func (e *Eval) killTarget(c *ast.CallExpr, env *Env) (Obj, error) {
 	// kill_target(1)
-	if !e.Core.Combat.DamageMode {
+	if !e.Core.IsDamageMode() {
 		return nil, errors.New("damage mode is not activated")
 	}
 
@@ -273,18 +273,19 @@ func (e *Eval) killTarget(c *ast.CallExpr, env *Env) (Obj, error) {
 	idx := int(ntoi(objs[0].(*number)))
 
 	// check if index is in range
-	if idx < 1 || idx > e.Core.Combat.EnemyCount() {
-		return nil, fmt.Errorf("index for kill_target is invalid, should be between %v and %v, got %v", 1, e.Core.Combat.EnemyCount(), idx)
+	enemies := e.Core.GetEnemies()
+	if idx < 1 || idx > len(enemies) {
+		return nil, fmt.Errorf("index for kill_target is invalid, should be between %v and %v, got %v", 1, len(enemies), idx)
 	}
 
-	e.Core.Combat.KillEnemy(idx - 1)
+	e.Core.KillEnemy(idx - 1)
 
 	return &null{}, nil
 }
 
 func (e *Eval) isTargetDead(c *ast.CallExpr, env *Env) (Obj, error) {
 	// is_target_dead(1)
-	if !e.Core.Combat.DamageMode {
+	if !e.Core.IsDamageMode() {
 		return nil, errors.New("damage mode is not activated")
 	}
 
@@ -295,11 +296,12 @@ func (e *Eval) isTargetDead(c *ast.CallExpr, env *Env) (Obj, error) {
 	idx := int(ntoi(objs[0].(*number)))
 
 	// check if index is in range
-	if idx < 1 || idx > e.Core.Combat.EnemyCount() {
-		return nil, fmt.Errorf("index for is_target_dead is invalid, should be between %v and %v, got %v", 1, e.Core.Combat.EnemyCount(), idx)
+	enemies := e.Core.GetEnemies()
+	if idx < 1 || idx > len(enemies) {
+		return nil, fmt.Errorf("index for is_target_dead is invalid, should be between %v and %v, got %v", 1, len(enemies), idx)
 	}
 
-	return bton(!e.Core.Combat.Enemy(idx - 1).IsAlive()), nil
+	return bton(!enemies[idx-1].IsAlive()), nil
 }
 
 func (e *Eval) pickUpCrystallize(c *ast.CallExpr, env *Env) (Obj, error) {
@@ -312,19 +314,19 @@ func (e *Eval) pickUpCrystallize(c *ast.CallExpr, env *Env) (Obj, error) {
 
 	// check if element is vaild
 	pickupEle := attributes.StringToEle(name.str)
-	if pickupEle == attributes.UnknownElement && name.str != "any" {
+	if pickupEle == attributes.ElementNone && name.str != "any" {
 		return nil, fmt.Errorf("pick_up_crystallize argument element %v is not a valid element", name.str)
 	}
 
 	var count int64
-	for _, g := range e.Core.Combat.Gadgets() {
-		shard, ok := g.(*crystallize.Shard)
+	for _, g := range e.Core.GetGadgets() {
+		shard, ok := g.(*reactable.CrystallizeShard)
 		// skip if no shard
 		if !ok {
 			continue
 		}
 		// skip if shard not specified element
-		if pickupEle != attributes.UnknownElement && shard.Shield.Ele != pickupEle {
+		if pickupEle != attributes.ElementNone && shard.Shield.Element() != pickupEle {
 			continue
 		}
 		// try to pick up shard and stop if succeeded
@@ -413,15 +415,15 @@ func (e *Eval) setOnTick(c *ast.CallExpr, env *Env) (Obj, error) {
 	}
 	fn := objs[0].(*funcval)
 
-	e.Core.Events.Subscribe(event.OnTick, func(args ...any) bool {
+	// TODO: add a way to unsubscribe
+	e.Core.Events().Tick.Subscribe(func(any) {
 		_, err := e.evalNode(fn.Body, env)
 		if err != nil {
 			// handle the error
 			e.err = err
 		}
+	})
 
-		return false
-	}, "sysfunc-ontick")
 	return &null{}, nil
 }
 
@@ -445,23 +447,23 @@ func (e *Eval) executeAction(c *ast.CallExpr, env *Env) (Obj, error) {
 	}
 
 	charKey := keys.Char(char.ival)
-	actionKey := action.Action(ac.ival)
-	if _, ok := e.Core.Player.ByKey(charKey); !ok {
+	actionKey := info.Action(ac.ival)
+	if char := e.Core.GetCharacterByKey(charKey); char == nil {
 		return nil, fmt.Errorf("can't execute action: %v is not on this team", charKey)
 	}
 
 	// if char is not on field then we need to send an implicit swap
-	if charKey != e.Core.Player.ActiveChar().Base.Key {
-		e.sendWork(&action.Eval{
+	if charKey != e.Core.GetCharacter(e.Core.ActiveCharacter()).GetBase().Key {
+		e.sendWork(&info.ActionEval{
 			Char:   charKey,
-			Action: action.ActionSwap,
+			Action: info.ActionSwap,
 		})
 		err = e.waitForNext()
 		if err != nil {
 			return nil, err
 		}
 	}
-	e.sendWork(&action.Eval{
+	e.sendWork(&info.ActionEval{
 		Char:   charKey,
 		Action: actionKey,
 		Param:  params,

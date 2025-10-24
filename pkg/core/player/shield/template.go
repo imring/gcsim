@@ -1,67 +1,49 @@
 package shield
 
-import "github.com/genshinsim/gcsim/pkg/core/attributes"
+import (
+	"github.com/genshinsim/gcsim/pkg/core/attributes"
+	"github.com/genshinsim/gcsim/pkg/core/info"
+)
 
 type Tmpl struct {
 	ActorIndex int
 	Target     int
 	Name       string
 	Src        int
-	ShieldType Type
-	Ele        attributes.Element
+	ShieldType info.ShieldType
+	Ele        attributes.ElementType
 	HP         float64
 	Expires    int
 }
 
-func (t *Tmpl) ShieldOwner() int {
-	return t.ActorIndex
-}
+func (t *Tmpl) ShieldOwner() int                { return t.ActorIndex }
+func (t *Tmpl) ShieldTarget() int               { return t.Target }
+func (t *Tmpl) Desc() string                    { return t.Name }
+func (t *Tmpl) Element() attributes.ElementType { return t.Ele }
+func (t *Tmpl) CurrentHP() float64              { return t.HP }
+func (t *Tmpl) Expiry() int                     { return t.Expires }
+func (t *Tmpl) Key() int                        { return t.Src }
+func (t *Tmpl) Type() info.ShieldType           { return t.ShieldType }
 
-func (t *Tmpl) ShieldTarget() int {
-	return t.Target
-}
+func (t *Tmpl) SetExpiry(expiry int) { t.Expires = expiry }
 
-func (t *Tmpl) Desc() string {
-	return t.Name
-}
-
-func (t *Tmpl) Element() attributes.Element {
-	return t.Ele
-}
-
-func (t *Tmpl) CurrentHP() float64 {
-	return t.HP
-}
-
-func (t *Tmpl) Expiry() int {
-	return t.Expires
-}
-
-func (t *Tmpl) Key() int {
-	return t.Src
-}
-
-func (t *Tmpl) Type() Type {
-	return t.ShieldType
-}
-
-func (t *Tmpl) ShieldStrength(ele attributes.Element, bonus float64) float64 {
+func (t *Tmpl) ShieldStrength(ele attributes.ElementType, bonus float64) float64 {
 	same := 1.0
 	if ele == t.Ele {
 		same = 2.5
 	}
-	if t.Ele == attributes.Geo {
+	if t.Ele == attributes.ElementRock {
 		same = 1.5
 	}
 	return t.HP * same * (1 + bonus)
 }
 
-func (t *Tmpl) OnDamage(dmg float64, ele attributes.Element, bonus float64) (float64, bool) {
+func (t *Tmpl) OnDamage(dmg float64, ele attributes.ElementType, bonus float64) (float64, bool) {
 	same := 1.0
 	if ele == t.Ele {
 		same = 2.5
 	}
-	if ele == attributes.Geo {
+	if ele == attributes.ElementRock {
 		same = 1.5
 	}
 	block := t.HP * same * (1 + bonus)
@@ -78,7 +60,5 @@ func (t *Tmpl) OnDamage(dmg float64, ele attributes.Element, bonus float64) (flo
 	return taken, t.HP != 0
 }
 
-func (t *Tmpl) OnExpire() {
-}
-
+func (t *Tmpl) OnExpire()    {}
 func (t *Tmpl) OnOverwrite() {}

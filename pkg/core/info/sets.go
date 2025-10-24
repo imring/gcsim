@@ -25,9 +25,3 @@ func (s Sets) MarshalJSON() ([]byte, error) {
 	str += "}"
 	return []byte(str), nil
 }
-
-type Set interface {
-	SetIndex(int)
-	GetCount() int
-	Init() error
-}

@@ -5,18 +5,19 @@ import (
 	_ "embed"
 
 	"fmt"
-	"github.com/genshinsim/gcsim/pkg/core/action"
+	"slices"
+
+	"github.com/genshinsim/gcsim/pkg/core/info"
 	"github.com/genshinsim/gcsim/pkg/core/keys"
 	"github.com/genshinsim/gcsim/pkg/gcs/validation"
 	"github.com/genshinsim/gcsim/pkg/model"
 	"google.golang.org/protobuf/encoding/prototext"
-	"slices"
 )
 
 //go:embed data_gen.textproto
 var pbData []byte
 var base *model.AvatarData
-var paramKeysValidation = map[action.Action][]string{
+var paramKeysValidation = map[info.Action][]string{
 	1: {"hold", "hold_c4"},
 	5: {"collision"},
 	6: {"collision"},
@@ -31,7 +32,7 @@ func init() {
 	validation.RegisterCharParamValidationFunc(keys.Bennett, ValidateParamKeys)
 }
 
-func ValidateParamKeys(a action.Action, keys []string) error {
+func ValidateParamKeys(a info.Action, keys []string) error {
 	valid, ok := paramKeysValidation[a]
 	if !ok {
 		return nil
@@ -42,10 +43,6 @@ func ValidateParamKeys(a action.Action, keys []string) error {
 		}
 	}
 	return nil
-}
-
-func (x *char) Data() *model.AvatarData {
-	return base
 }
 
 var (

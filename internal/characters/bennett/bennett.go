@@ -1,7 +1,6 @@
 package bennett
 
 import (
-	tmpl "github.com/genshinsim/gcsim/internal/template/character"
 	"github.com/genshinsim/gcsim/pkg/core"
 	"github.com/genshinsim/gcsim/pkg/core/info"
 	"github.com/genshinsim/gcsim/pkg/core/keys"
@@ -13,27 +12,35 @@ func init() {
 }
 
 type char struct {
-	*tmpl.Character
+	*character.Character
+	core core.Core
 }
 
-func NewChar(s *core.Core, w *character.CharWrapper, _ info.CharacterProfile) error {
-	c := char{}
-	c.Character = tmpl.NewWithWrapper(s, w)
-	c.ParticleDelay = 80 // special default for bennett
+func NewChar(s core.Core, p info.CharacterProfile) (core.Character, error) {
+	var err error
 
-	c.EnergyMax = 60
-	c.NormalHitNum = normalHitNum
-	c.SkillCon = 3
-	c.BurstCon = 5
+	c := &char{core: s}
+	c.Character, err = character.New(character.Opt{
+		Core:    s,
+		Profile: p,
+		Data:    base,
 
-	w.Character = &c
+		EnergyMax:    60,
+		NormalHitNum: normalHitNum,
+		SkillCon:     3,
+		BurstCon:     5,
+	})
+	if err != nil {
+		return nil, err
+	}
 
-	return nil
+	c.SetParticleDelay(80) // special default for bennett
+	return c, nil
 }
 
 func (c *char) Init() error {
-	if c.Base.Cons >= 2 {
-		c.c2()
+	if c.GetBase().Cons >= 2 {
+		// c.c2()
 	}
 	return nil
 }

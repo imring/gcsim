@@ -6,7 +6,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/genshinsim/gcsim/pkg/shortcut"
+	"github.com/genshinsim/gcsim/pkg/core/shortcut"
 )
 
 const eof = -1
@@ -95,7 +95,7 @@ func (l *Lexer) acceptRun(valid string) {
 
 // errorf returns an error token and terminates the scan by passing
 // back a nil pointer that will be the next state, terminating l.nextItem.
-func (l *Lexer) errorf(format string, args ...any) stateFn {
+func (l *Lexer) errorf(format string, args ...interface{}) stateFn {
 	l.items <- Token{
 		Typ:  ItemError,
 		Pos:  l.start,
